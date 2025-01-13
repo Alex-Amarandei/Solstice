@@ -4,7 +4,7 @@ import { Keypair, PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
 import { ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
-import { useSablierProgram, useSablierProgramAccount } from './Sablier-data-access'
+import { useSablierProgram, useSablierProgramAccount } from './sablier-data-access'
 
 export function SablierCreate() {
   const { initialize } = useSablierProgram()

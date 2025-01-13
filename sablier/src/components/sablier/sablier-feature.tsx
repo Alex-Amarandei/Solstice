@@ -4,8 +4,8 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletButton } from '../solana/solana-provider'
 import { AppHero, ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
-import { useSablierProgram } from './Sablier-data-access'
-import { SablierCreate, SablierList } from './Sablier-ui'
+import { useSablierProgram } from './sablier-data-access'
+import { SablierCreate, SablierList } from './sablier-ui'
 
 export default function SablierFeature() {
   const { publicKey } = useWallet()

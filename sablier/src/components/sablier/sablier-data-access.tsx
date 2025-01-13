@@ -19,8 +19,8 @@ export function useSablierProgram() {
   const program = useMemo(() => getSablierProgram(provider, programId), [provider, programId])
 
   const accounts = useQuery({
-    queryKey: ['Sablier', 'all', { cluster }],
-    queryFn: () => program.account.Sablier.all(),
+    queryKey: ['sablier', 'all', { cluster }],
+    queryFn: () => program.account.sablier.all(),
   })
 
   const getProgramAccount = useQuery({
@@ -29,9 +29,9 @@ export function useSablierProgram() {
   })
 
   const initialize = useMutation({
-    mutationKey: ['Sablier', 'initialize', { cluster }],
+    mutationKey: ['sablier', 'initialize', { cluster }],
     mutationFn: (keypair: Keypair) =>
-      program.methods.initialize().accounts({ Sablier: keypair.publicKey }).signers([keypair]).rpc(),
+      program.methods.initialize().accounts({ sablier: keypair.publicKey }).signers([keypair]).rpc(),
     onSuccess: (signature) => {
       transactionToast(signature)
       return accounts.refetch()
@@ -54,13 +54,13 @@ export function useSablierProgramAccount({ account }: { account: PublicKey }) {
   const { program, accounts } = useSablierProgram()
 
   const accountQuery = useQuery({
-    queryKey: ['Sablier', 'fetch', { cluster, account }],
-    queryFn: () => program.account.Sablier.fetch(account),
+    queryKey: ['sablier', 'fetch', { cluster, account }],
+    queryFn: () => program.account.sablier.fetch(account),
   })
 
   const closeMutation = useMutation({
-    mutationKey: ['Sablier', 'close', { cluster, account }],
-    mutationFn: () => program.methods.close().accounts({ Sablier: account }).rpc(),
+    mutationKey: ['sablier', 'close', { cluster, account }],
+    mutationFn: () => program.methods.close().accounts({ sablier: account }).rpc(),
     onSuccess: (tx) => {
       transactionToast(tx)
       return accounts.refetch()
@@ -68,8 +68,8 @@ export function useSablierProgramAccount({ account }: { account: PublicKey }) {
   })
 
   const decrementMutation = useMutation({
-    mutationKey: ['Sablier', 'decrement', { cluster, account }],
-    mutationFn: () => program.methods.decrement().accounts({ Sablier: account }).rpc(),
+    mutationKey: ['sablier', 'decrement', { cluster, account }],
+    mutationFn: () => program.methods.decrement().accounts({ sablier: account }).rpc(),
     onSuccess: (tx) => {
       transactionToast(tx)
       return accountQuery.refetch()
@@ -77,8 +77,8 @@ export function useSablierProgramAccount({ account }: { account: PublicKey }) {
   })
 
   const incrementMutation = useMutation({
-    mutationKey: ['Sablier', 'increment', { cluster, account }],
-    mutationFn: () => program.methods.increment().accounts({ Sablier: account }).rpc(),
+    mutationKey: ['sablier', 'increment', { cluster, account }],
+    mutationFn: () => program.methods.increment().accounts({ sablier: account }).rpc(),
     onSuccess: (tx) => {
       transactionToast(tx)
       return accountQuery.refetch()
@@ -86,8 +86,8 @@ export function useSablierProgramAccount({ account }: { account: PublicKey }) {
   })
 
   const setMutation = useMutation({
-    mutationKey: ['Sablier', 'set', { cluster, account }],
-    mutationFn: (value: number) => program.methods.set(value).accounts({ Sablier: account }).rpc(),
+    mutationKey: ['sablier', 'set', { cluster, account }],
+    mutationFn: (value: number) => program.methods.set(value).accounts({ sablier: account }).rpc(),
     onSuccess: (tx) => {
       transactionToast(tx)
       return accountQuery.refetch()

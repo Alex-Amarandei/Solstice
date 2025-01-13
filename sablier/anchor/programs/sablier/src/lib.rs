@@ -5,4 +5,4 @@ use anchor_lang::prelude::*;
 declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
 
 #[program]
-pub mod Sablier {}
+pub mod sablier {}

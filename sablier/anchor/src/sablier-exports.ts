@@ -1,8 +1,8 @@
 // Here we export some useful types and functions for interacting with the Anchor program.
 import { AnchorProvider, Program } from '@coral-xyz/anchor'
 import { Cluster, PublicKey } from '@solana/web3.js'
-import SablierIDL from '../target/idl/Sablier.json'
-import type { Sablier } from '../target/types/Sablier'
+import SablierIDL from '../target/idl/sablier.json'
+import type { Sablier } from '../target/types/sablier'
 
 // Re-export the generated IDL and type
 export { Sablier, SablierIDL }

@@ -1,4 +1,4 @@
-# Sablier
+# sablier
 
 ## Getting Started
 
