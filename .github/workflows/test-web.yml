@@ -6,31 +6,37 @@ on:
         branches: ['main']
 
 jobs:
-    test-and-build:
+    hello-world:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+            - name: HelloWorld
+              run: echo "hello world"
+#     test-and-build:
+#         runs-on: ubuntu-latest
 
-            - name: Install pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 9
-                  run_install: false
+#         steps:
+#             - name: Checkout
+#               uses: actions/checkout@v4
 
-            - name: Install Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: 'pnpm'
+#             - name: Install pnpm
+#               uses: pnpm/action-setup@v4
+#               with:
+#                   version: 9
+#                   run_install: false
 
-            - name: Install dependencies
-              run: |
-                  cd sablier
-                  pnpm install --frozen-lockfile
+#             - name: Install Node.js
+#               uses: actions/setup-node@v4
+#               with:
+#                   node-version: 20
+#                   cache: 'pnpm'
 
-            - name: Build project
-              run: |
-                  cd sablier
-                  pnpm build
+#             - name: Install dependencies
+#               run: |
+#                   cd sablier
+#                   pnpm install --frozen-lockfile
+
+#             - name: Build project
+#               run: |
+#                   cd sablier
+#                   pnpm build

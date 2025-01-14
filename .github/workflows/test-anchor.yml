@@ -23,7 +23,6 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  cache: 'pnpm'
 
             - name: Install dependencies
               run: |
@@ -51,12 +50,14 @@ jobs:
                   cd sablier
                   solana config get
 
-            - run: |
+            - name: Anchor Build
+              run: |
                   cd sablier
                   pnpm run anchor build
               shell: bash
 
-            - run: |
+            - name: Anchor Test
+              run: |
                   cd sablier
                   pnpm run anchor test
               shell: bash
