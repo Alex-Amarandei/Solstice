@@ -11,17 +11,29 @@ pub struct LockupLinearStream {
     pub sender: Pubkey,
     pub recipient: Pubkey,
 
-    pub amount: u64,
     pub token_mint: Pubkey,
 
-    pub start_time: i64,
-    pub cliff_time: i64,
-    pub end_time: i64,
+    pub amounts: Amounts,
+
+    pub milestones: Milestones,
 
     pub is_cancelable: bool,
     pub is_canceled: bool,
-    pub is_depleted: bool,
     pub is_transferable: bool,
+}
+
+#[derive(Clone, InitSpace, AnchorSerialize, AnchorDeserialize)]
+pub struct Amounts {
+    pub deposited: u64,
+    pub refunded: u64,
+    pub withdrawn: u64,
+}
+
+#[derive(Clone, InitSpace, AnchorSerialize, AnchorDeserialize)]
+pub struct Milestones {
+    pub start_time: i64,
+    pub cliff_time: i64,
+    pub end_time: i64,
 }
 
 #[account]

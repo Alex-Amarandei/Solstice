@@ -10,11 +10,15 @@ mod error;
 mod instructions;
 mod state;
 
-declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
+declare_id!("7bQwRRQErWVNRczPTGbg7rtALWCHDhGn8sUvkAZYFt4d");
 
 #[program]
 pub mod sablier {
     use super::*;
+
+    pub fn initialize_stream_counter(ctx: Context<InitializeStreamCounter>) -> Result<()> {
+        process_initialize_stream_counter(ctx)
+    }
 
     pub fn create_stream(
         ctx: Context<CreateLockupLinearStream>,

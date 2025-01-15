@@ -1,7 +1,7 @@
-use crate::{LockupLinearStream, LockupLinearStreamCounter, ANCHOR_DISCRIMINATOR, error::ErrorCode};
+use crate::{error::ErrorCode, Amounts, LockupLinearStream, LockupLinearStreamCounter, Milestones, ANCHOR_DISCRIMINATOR};
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface}
+    associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface, TransferChecked, transfer_checked}
 };
 
 pub fn process_create_stream(
@@ -15,39 +15,80 @@ pub fn process_create_stream(
     is_cancelable: bool,
     is_transferable: bool,
 ) -> Result<()> {
+    // Log entry into the function
+    msg!("Processing CreateLockupLinearStream...");
+    
     // Uniquely define Stream based on the current stream index
     let stream_counter = &mut ctx.accounts.stream_counter;
     let stream_id = format!("LL-{}", stream_counter.stream_index);
+    msg!("Stream ID: {}", stream_id);
+
+    let pda = ctx.accounts.lockup_linear_stream.key();
+    msg!("Derived PDA for LockupLinearStream: {}", pda);
 
     // Check the validity of the timestamps provided
     let clock = Clock::get()?;
+    msg!("Current timestamp: {}", clock.unix_timestamp);
 
     require!(start_time > clock.unix_timestamp, ErrorCode::InvalidStartTime);
     require!(start_time <= cliff_time, ErrorCode::InvalidCliffTime);
     require!(start_time <= end_time, ErrorCode::InvalidEndTime);
 
+    // Log timestamp values
+    msg!(
+        "Start time: {}, Cliff time: {}, End time: {}",
+        start_time,
+        cliff_time,
+        end_time
+    );
+
     // Check the validity of the amount provided
     require!(amount > 0, ErrorCode::InvalidAmount);
+    msg!("Amount validated: {}", amount);
+
+    let amounts = Amounts {
+        deposited: amount,
+        refunded: 0,
+        withdrawn: 0,
+    };
+
+    let milestones = Milestones {
+        start_time,
+        cliff_time,
+        end_time,
+    };
 
     // Initialize the LockupLinearStream account
     *ctx.accounts.lockup_linear_stream = LockupLinearStream {
-        id: stream_id,
+        id: stream_id.clone(),
         sender: *ctx.accounts.sender.key,
         token_mint: ctx.accounts.token_mint.key(),
         is_canceled: false,
-        is_depleted: false,
-        name,
-        recipient,
-        amount,
-        start_time,
-        end_time,
-        cliff_time,
+        name: name.clone(),
+        amounts,
+        milestones,
         is_cancelable,
         is_transferable,
+        recipient,
     };
+    msg!("LockupLinearStream initialized with ID: {}", stream_id);
+
+    // Transfer the amount from sender's token account to the treasury token account
+    let cpi_accounts = TransferChecked {
+        from: ctx.accounts.sender_token_account.to_account_info(),
+        to: ctx.accounts.treasury_token_account.to_account_info(),
+        mint: ctx.accounts.token_mint.to_account_info(),
+        authority: ctx.accounts.sender.to_account_info(),
+    };
+    let cpi_program = ctx.accounts.token_program.to_account_info();
+    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
     
+    transfer_checked(cpi_ctx, amount, ctx.accounts.token_mint.decimals)?;
+    msg!("Transferred {} tokens from sender to Stream {}", amount, stream_id);
+
     // Increment the stream index
     stream_counter.stream_index += 1;
+    msg!("Stream index incremented to {}", stream_counter.stream_index);
 
     Ok(())
 }
@@ -68,23 +109,21 @@ pub struct CreateLockupLinearStream<'info> {
     pub sender_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
-        init, 
-        token::mint=token_mint, 
-        token::authority=treasury_token_account, 
-        payer=sender,
-        seeds=[b"treasury", sender.key().as_ref()], 
-        bump
-    )]
-    pub treasury_token_account: InterfaceAccount<'info, TokenAccount>,
-
-    #[account(
-        init_if_needed,
-        payer = sender,
-        space = ANCHOR_DISCRIMINATOR + LockupLinearStreamCounter::INIT_SPACE,
+        mut,
         seeds = [b"LLStreamCounter"],
         bump,
     )]
     pub stream_counter: Account<'info, LockupLinearStreamCounter>,
+
+    #[account(
+        init, 
+        payer = sender,
+        token::mint = token_mint, 
+        token::authority = treasury_token_account, 
+        seeds = [b"Treasury", sender.key().as_ref(), &stream_counter.stream_index.to_le_bytes()], 
+        bump
+    )]
+    pub treasury_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         init, 
