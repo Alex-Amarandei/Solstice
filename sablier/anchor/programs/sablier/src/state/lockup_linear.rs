@@ -40,4 +40,6 @@ pub struct Milestones {
 #[derive(InitSpace)]
 pub struct LockupLinearStreamCounter {
     pub stream_index: u64,
+    // ! TODO: Add authority for enforcing team control
+    // pub authority: Pubkey, // Enforce team control
 }

@@ -20,6 +20,15 @@ pub fn process_create_stream(
     
     // Uniquely define Stream based on the current stream index
     let stream_counter = &mut ctx.accounts.stream_counter;
+
+    // ! TODO: Add authority for enforcing team control
+    // // Ensure the authority is valid
+    // let team_authority = Pubkey::from_str("YourTeamWalletPublicKeyHere").unwrap();
+    // require!(
+    //     stream_counter.authority == team_authority,
+    //     ErrorCode::UnauthorizedStreamCounter
+    // );
+
     let stream_id = format!("LL-{}", stream_counter.stream_index);
     msg!("Stream ID: {}", stream_id);
 
