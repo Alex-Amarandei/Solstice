@@ -16,22 +16,24 @@ declare_id!("7bQwRRQErWVNRczPTGbg7rtALWCHDhGn8sUvkAZYFt4d");
 pub mod sablier {
     use super::*;
 
-    pub fn initialize_stream_counter(ctx: Context<InitializeStreamCounter>) -> Result<()> {
-        process_initialize_stream_counter(ctx)
+    pub fn initialize_lockup_linear_stream_counter(
+        ctx: Context<InitializeLockupLinearStreamCounter>,
+    ) -> Result<()> {
+        process_initialize_lockup_linear_stream_counter(ctx)
     }
 
-    pub fn create_stream(
+    pub fn create_lockup_linear_stream(
         ctx: Context<CreateLockupLinearStream>,
         name: String,
         recipient: Pubkey,
         amount: u64,
         start_time: i64,
         end_time: i64,
-        cliff_time: i64,
+        cliff_time: Option<i64>,
         is_cancelable: bool,
         is_transferable: bool,
     ) -> Result<()> {
-        process_create_stream(
+        process_create_lockup_linear_stream(
             ctx,
             name,
             recipient,
@@ -42,5 +44,9 @@ pub mod sablier {
             is_cancelable,
             is_transferable,
         )
+    }
+
+    pub fn cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream>) -> Result<()> {
+        process_cancel_lockup_linear_stream(ctx)
     }
 }
