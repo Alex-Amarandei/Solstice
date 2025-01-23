@@ -16,7 +16,7 @@ pub fn process_create_lockup_linear_stream(
     amount: u64,
     start_time: i64,
     end_time: i64,
-    cliff_time: Option<i64>,
+    cliff_time: i64,
     is_cancelable: bool,
     is_transferable: bool,
 ) -> Result<()> {
@@ -25,17 +25,15 @@ pub fn process_create_lockup_linear_stream(
     let stream_counter = &mut ctx.accounts.stream_counter;
     let stream_id = format!("LL-{}", stream_counter.stream_index);
 
-    // Validate optional cliff time
-    if let Some(c_time) = cliff_time {
-        require!(
-            c_time >= start_time,
-            Error::Validation::Stream::InvalidCliffTime
-        );
-        require!(
-            c_time <= end_time,
-            Error::Validation::Stream::InvalidCliffTime
-        );
-    }
+    // Validate cliff time
+    require!(
+        cliff_time >= start_time,
+        Error::Validation::Stream::InvalidCliffTime
+    );
+    require!(
+        cliff_time <= end_time,
+        Error::Validation::Stream::InvalidCliffTime
+    );
 
     // Ensure amount is positive
     require!(amount > 0, Error::Validation::Stream::InvalidAmount);
@@ -48,7 +46,7 @@ pub fn process_create_lockup_linear_stream(
     };
 
     // Initialize stream account
-    *ctx.accounts.lockup_linear_stream = LockupLinearStream {
+    *ctx.accounts.stream = LockupLinearStream {
         base_stream: BaseStream {
             id: stream_id.clone(),
             sender: *ctx.accounts.sender.key,
@@ -135,7 +133,7 @@ pub struct CreateLockupLinearStream<'info> {
         ],
         bump
     )]
-    pub lockup_linear_stream: Account<'info, LockupLinearStream>,
+    pub stream: Account<'info, LockupLinearStream>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,

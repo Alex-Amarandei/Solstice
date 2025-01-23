@@ -26,6 +26,12 @@ pub mod Error {
 
             #[msg("Stream is not cancelable")]
             NotCancelable,
+
+            #[msg("Stream is not cancelable after the end time has passed")]
+            NotCancelablePastEndTime,
+
+            #[msg("Stream cancelability is not renounceable after the end time has passed")]
+            NotRenounceablePastEndTime,
         }
     }
 
@@ -36,6 +42,9 @@ pub mod Error {
         pub enum Stream {
             #[msg("Only the Stream's Creator can cancel the Stream")]
             UnauthorizedCancel,
+
+            #[msg("Only the Stream's Creator can renounce the Stream's cancelability")]
+            UnauthorizedRenounce,
         }
 
         #[error_code]

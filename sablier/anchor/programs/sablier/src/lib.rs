@@ -29,7 +29,7 @@ pub mod sablier {
         amount: u64,
         start_time: i64,
         end_time: i64,
-        cliff_time: Option<i64>,
+        cliff_time: i64,
         is_cancelable: bool,
         is_transferable: bool,
     ) -> Result<()> {
@@ -48,5 +48,11 @@ pub mod sablier {
 
     pub fn cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream>) -> Result<()> {
         process_cancel_lockup_linear_stream(ctx)
+    }
+
+    pub fn renounce_cancelability_lockup_linear_stream(
+        ctx: Context<RenounceCancelabilityLockupLinearStream>,
+    ) -> Result<()> {
+        process_renounce_cancelability_lockup_linear_stream(ctx)
     }
 }

@@ -43,7 +43,29 @@ pub fn validate_cancel(sender: Pubkey, base_stream: &BaseStream) -> Result<()> {
     );
     require!(
         base_stream.end_time > Clock::get()?.unix_timestamp,
+        Error::Validation::Stream::NotCancelablePastEndTime
+    );
+
+    Ok(())
+}
+
+/// Validates if a stream's cancelability can be renounced by the given sender.
+pub fn validate_renounce(sender: Pubkey, base_stream: &BaseStream) -> Result<()> {
+    require!(
+        sender == base_stream.sender,
+        Error::Authorization::Stream::UnauthorizedRenounce
+    );
+    require!(
+        !base_stream.is_canceled,
+        Error::Validation::Stream::AlreadyCanceled
+    );
+    require!(
+        base_stream.is_cancelable,
         Error::Validation::Stream::NotCancelable
+    );
+    require!(
+        base_stream.end_time > Clock::get()?.unix_timestamp,
+        Error::Validation::Stream::NotRenounceablePastEndTime
     );
 
     Ok(())

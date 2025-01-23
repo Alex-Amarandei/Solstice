@@ -6,5 +6,5 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace)]
 pub struct LockupLinearStream {
     pub base_stream: BaseStream,
-    pub cliff_time: Option<i64>,
+    pub cliff_time: i64,
 }

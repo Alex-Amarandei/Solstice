@@ -4,15 +4,15 @@ import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { Sablier } from '@project/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { BankrunProvider } from 'anchor-bankrun';
-import { TIMEOUT } from 'anchor/tests/utils';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import { startAnchor } from 'solana-bankrun';
 import IDL from '../../../target/idl/sablier.json';
+import { TIMEOUT } from '../../utils';
 
 dotenv.config({ path: __dirname + '/../../.env' });
 
-describe('Lockup Linear Stream Counter Tests', () => {
+describe('Lockup Linear Stream - Initialize Counter Test', () => {
 	let context: any;
 	let provider: BankrunProvider;
 	let program: Program<Sablier>;

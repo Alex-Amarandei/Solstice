@@ -9,14 +9,14 @@ import { BN, setProvider } from '@coral-xyz/anchor';
 import { SYSTEM_PROGRAM_ID } from '@coral-xyz/anchor/dist/cjs/native/system';
 import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { Sablier } from '@project/anchor';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { TIMEOUT } from 'anchor/tests/utils';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import fs from 'fs';
 import IDL from '../../../target/idl/sablier.json';
+import { TIMEOUT } from '../../utils';
 
 dotenv.config({ path: __dirname + '/../../.env' });
 
-describe('Lockup Linear Stream Test', () => {
+describe('Lockup Linear Stream - Create Test', () => {
 	let teamKeypair: Keypair;
 	const streamName = 'testStream';
 
@@ -124,7 +124,7 @@ describe('Lockup Linear Stream Test', () => {
 		expect(tx).toBeDefined();
 	}, TIMEOUT);
 
-	describe('Happy Flow', () => {
+	describe('Lockup Linear Stream - Create - Happy Flow', () => {
 		it(
 			'should create a lockup linear stream',
 			async () => {
@@ -135,8 +135,6 @@ describe('Lockup Linear Stream Test', () => {
 				const amount = new BN(1_000_000); // Amount to lock in stream (1M tokens)
 				const isCancelable = true; // Allow cancelation
 				const isTransferable = true; // Allow transferability
-
-				console.log(streamCounter.toBase58());
 
 				// Send the createStream transaction
 				const tx = await program.methods
@@ -150,16 +148,10 @@ describe('Lockup Linear Stream Test', () => {
 						isCancelable,
 						isTransferable
 					)
-					.accountsStrict({
+					.accounts({
 						sender: alice.publicKey,
 						tokenMint: mint,
 						tokenProgram: TOKEN_PROGRAM_ID,
-						treasuryTokenAccount,
-						senderTokenAccount: aliceTokenAccount,
-						streamCounter,
-						lockupLinearStream,
-						associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-						systemProgram: SYSTEM_PROGRAM_ID,
 					})
 					.signers([alice])
 					.rpc();
@@ -191,13 +183,14 @@ describe('Lockup Linear Stream Test', () => {
 				expect(streamData.cliffTime!.toString()).toBe(cliffTime.toString());
 				expect(streamData.baseStream.endTime.toString()).toBe(endTime.toString());
 				expect(streamData.baseStream.isCancelable).toBe(isCancelable);
+				expect(streamData.baseStream.isCanceled).toBe(false);
 				expect(streamData.baseStream.isTransferable).toBe(isTransferable);
 			},
 			TIMEOUT
 		);
 	});
 
-	describe('Error Flows', () => {
+	describe('Lockup Linear Stream - Create - Error Flow', () => {
 		beforeAll(async () => {
 			// Derive new PDAs for stream and treasury token account since the Stream Counter's Stream Index is now 1
 			[lockupLinearStream] = PublicKey.findProgramAddressSync(
