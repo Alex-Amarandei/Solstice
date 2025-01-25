@@ -93,7 +93,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 
 		// Create token mint and associated token accounts
 		// @ts-expect-error - Type error in spl-token-bankrun dependency
-		mint = await createMint(banksClient, alice, alice.publicKey, null, 6);
+		mint = await createMint(banksClient, alice, alice.publicKey, null, 9); // Mint with 9 decimals
 		// @ts-expect-error - Type error in spl-token-bankrun dependency
 		aliceTokenAccount = await createAssociatedTokenAccount(banksClient, alice, mint, alice.publicKey);
 
@@ -105,7 +105,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 
 		// Mint tokens to Alice's token account for testing
 		// @ts-expect-error - Type error in spl-token-bankrun dependency
-		await mintTo(banksClient, alice, mint, aliceTokenAccount, alice, 1_000_000_000);
+		await mintTo(banksClient, alice, mint, aliceTokenAccount, alice, 1_000_000_000_000);
 
 		// Initialize the LockupLinearStreamCounter once
 		const tx = await program.methods
@@ -132,11 +132,11 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 
 				// Derive new addresses
 				const [fullRefundStream] = PublicKey.findProgramAddressSync(
-					[Buffer.from('LockupLinearStream'), alice.publicKey.toBuffer(), new BN(0).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearStream'), new BN(0).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 				const [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
-					[Buffer.from('Treasury'), mint.toBuffer(), new BN(0).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearTreasury'), mint.toBuffer(), new BN(0).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -227,11 +227,11 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				const isTransferable = true;
 
 				const [partialRefundStream] = PublicKey.findProgramAddressSync(
-					[Buffer.from('LockupLinearStream'), alice.publicKey.toBuffer(), new BN(1).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearStream'), new BN(1).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 				const [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
-					[Buffer.from('Treasury'), mint.toBuffer(), new BN(1).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearTreasury'), mint.toBuffer(), new BN(1).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -323,7 +323,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				const isTransferable = true;
 
 				[cancelableLockupLinearStream] = PublicKey.findProgramAddressSync(
-					[Buffer.from('LockupLinearStream'), alice.publicKey.toBuffer(), new BN(2).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearStream'), new BN(2).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -348,7 +348,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				expect(createCancelableStreamTx).toBeDefined();
 
 				const [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
-					[Buffer.from('Treasury'), mint.toBuffer(), new BN(2).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearTreasury'), mint.toBuffer(), new BN(2).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -368,7 +368,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 						})
 						.signers([bob])
 						.rpc()
-				).rejects.toThrow(/A seeds constraint was violated./);
+				).rejects.toThrow(/Only the Stream's Creator can cancel the Stream./);
 			},
 			TIMEOUT
 		);
@@ -384,7 +384,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				const isTransferable = true;
 
 				[canceledLockupLinearStream] = PublicKey.findProgramAddressSync(
-					[Buffer.from('LockupLinearStream'), alice.publicKey.toBuffer(), new BN(3).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearStream'), new BN(3).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -409,7 +409,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				expect(createCancelableStreamTx).toBeDefined();
 
 				const [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
-					[Buffer.from('Treasury'), mint.toBuffer(), new BN(3).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearTreasury'), mint.toBuffer(), new BN(3).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -457,7 +457,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				const isTransferable = true;
 
 				[notCancelableLockupLinearStream] = PublicKey.findProgramAddressSync(
-					[Buffer.from('LockupLinearStream'), alice.publicKey.toBuffer(), new BN(4).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearStream'), new BN(4).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -482,7 +482,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				expect(createNotCancelableStreamTx).toBeDefined();
 
 				const [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
-					[Buffer.from('Treasury'), mint.toBuffer(), new BN(4).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearTreasury'), mint.toBuffer(), new BN(4).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -515,7 +515,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				const isTransferable = true;
 
 				[endedLockupLinearStream] = PublicKey.findProgramAddressSync(
-					[Buffer.from('LockupLinearStream'), alice.publicKey.toBuffer(), new BN(5).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearStream'), new BN(5).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 
@@ -552,7 +552,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				);
 
 				const [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
-					[Buffer.from('Treasury'), mint.toBuffer(), new BN(5).toArrayLike(Buffer, 'le', 8)],
+					[Buffer.from('LockupLinearTreasury'), mint.toBuffer(), new BN(5).toArrayLike(Buffer, 'le', 8)],
 					program.programId
 				);
 

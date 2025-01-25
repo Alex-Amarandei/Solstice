@@ -1,4 +1,7 @@
-use crate::{initialize_stream_counter, StreamCounter, ANCHOR_DISCRIMINATOR};
+use crate::{
+    initialize_stream_counter, seeds::LOCKUP_LINEAR_STREAM_COUNTER, StreamCounter,
+    ANCHOR_DISCRIMINATOR,
+};
 use anchor_lang::prelude::*;
 
 /// Initializes the lockup linear stream counter account.
@@ -18,7 +21,7 @@ pub struct InitializeLockupLinearStreamCounter<'info> {
         init,
         payer = sender,
         space = ANCHOR_DISCRIMINATOR + StreamCounter::INIT_SPACE,
-        seeds = [b"LockupLinearStreamCounter"],
+        seeds = [LOCKUP_LINEAR_STREAM_COUNTER.as_ref()],
         bump
     )]
     pub stream_counter: Account<'info, StreamCounter>,

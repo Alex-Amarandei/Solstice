@@ -8,6 +8,7 @@ use state::*;
 mod constants;
 mod error;
 mod instructions;
+mod seeds;
 mod state;
 
 declare_id!("7bQwRRQErWVNRczPTGbg7rtALWCHDhGn8sUvkAZYFt4d");
@@ -54,5 +55,12 @@ pub mod sablier {
         ctx: Context<RenounceCancelabilityLockupLinearStream>,
     ) -> Result<()> {
         process_renounce_cancelability_lockup_linear_stream(ctx)
+    }
+
+    pub fn withdraw_from_lockup_linear_stream(
+        ctx: Context<WithdrawFromLockupLinearStream>,
+        amount: u64,
+    ) -> Result<()> {
+        process_withdraw_from_lockup_linear_stream(ctx, amount)
     }
 }

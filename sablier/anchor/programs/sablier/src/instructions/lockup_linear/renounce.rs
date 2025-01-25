@@ -1,13 +1,17 @@
 use anchor_lang::prelude::*;
 
-use crate::{error::Error, validate_renounce, LockupLinearStream};
+use crate::{
+    extract_stream_counter_index, seeds::LOCKUP_LINEAR_STREAM, validate_renounce,
+    LockupLinearStream,
+};
 
 /// Renounces the cancelability of a lockup linear stream.
 pub fn process_renounce_cancelability_lockup_linear_stream(
     ctx: Context<RenounceCancelabilityLockupLinearStream>,
 ) -> Result<()> {
-    // Validate if renouncing cancelability is permitted
+    msg!("Validating Renounce Operation... 🛂");
     validate_renounce(ctx.accounts.sender.key(), &ctx.accounts.stream.base_stream)?;
+    msg!("Validation successful! ✅ Renouncing cancelability... ⏳");
 
     let base_stream = &mut ctx.accounts.stream.base_stream;
 
@@ -25,14 +29,8 @@ pub struct RenounceCancelabilityLockupLinearStream<'info> {
     #[account(
         mut,
         seeds = [
-            b"LockupLinearStream",
-            sender.key().as_ref(),
-            &stream.base_stream.id
-                .split('-')
-                .nth(1)
-                .and_then(|index| index.parse::<u64>().ok())
-                .expect(Error::Validation::Stream::InvalidStreamIdFormat.to_string().as_str())
-                .to_le_bytes()
+            LOCKUP_LINEAR_STREAM.as_ref(),
+            &extract_stream_counter_index(&stream.base_stream.id),
         ],
         bump
     )]

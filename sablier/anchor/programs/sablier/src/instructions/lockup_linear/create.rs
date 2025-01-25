@@ -1,6 +1,7 @@
 use crate::{
-    error::Error, validate_create, Amounts, BaseStream, LockupLinearStream, StreamCounter,
-    ANCHOR_DISCRIMINATOR,
+    error::Error,
+    seeds::{LOCKUP_LINEAR_STREAM, LOCKUP_LINEAR_STREAM_COUNTER, LOCKUP_LINEAR_TREASURY},
+    validate_create, Amounts, BaseStream, LockupLinearStream, StreamCounter, ANCHOR_DISCRIMINATOR,
 };
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -20,10 +21,8 @@ pub fn process_create_lockup_linear_stream(
     is_cancelable: bool,
     is_transferable: bool,
 ) -> Result<()> {
-    validate_create(&ctx.accounts.stream_counter, start_time, end_time)?;
-
-    let stream_counter = &mut ctx.accounts.stream_counter;
-    let stream_id = format!("LL-{}", stream_counter.stream_index);
+    msg!("Validating Create Operation... 🛂");
+    validate_create(&ctx.accounts.stream_counter, start_time, end_time, amount)?;
 
     // Validate cliff time
     require!(
@@ -35,8 +34,10 @@ pub fn process_create_lockup_linear_stream(
         Error::Validation::Stream::InvalidCliffTime
     );
 
-    // Ensure amount is positive
-    require!(amount > 0, Error::Validation::Stream::InvalidAmount);
+    msg!("Validation successful ✅ Creating stream... ⏳");
+
+    let stream_counter = &mut ctx.accounts.stream_counter;
+    let stream_id = format!("LL-{}", stream_counter.stream_index);
 
     // Prepare amounts struct
     let amounts = Amounts {
@@ -62,7 +63,7 @@ pub fn process_create_lockup_linear_stream(
         },
         cliff_time,
     };
-    msg!("LockupLinearStream created with ID: {}", stream_id);
+    msg!("LockupLinearStream created with ID: {} ✨", stream_id);
 
     // Transfer tokens into treasury
     let cpi_accounts = TransferChecked {
@@ -73,12 +74,12 @@ pub fn process_create_lockup_linear_stream(
     };
     let cpi_ctx = CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts);
     transfer_checked(cpi_ctx, amount, ctx.accounts.token_mint.decimals)?;
-    msg!("Transferred {} tokens to the treasury.", amount);
+    msg!("Transferred {} tokens to the treasury 💸", amount);
 
     // Increment stream counter
     stream_counter.stream_index += 1;
     msg!(
-        "Stream index incremented to {}",
+        "Stream index incremented to {} 🧮",
         stream_counter.stream_index
     );
 
@@ -103,7 +104,7 @@ pub struct CreateLockupLinearStream<'info> {
 
     #[account(
         mut,
-        seeds = [b"LockupLinearStreamCounter"],
+        seeds = [LOCKUP_LINEAR_STREAM_COUNTER.as_ref()],
         bump,
     )]
     pub stream_counter: Account<'info, StreamCounter>,
@@ -114,7 +115,7 @@ pub struct CreateLockupLinearStream<'info> {
         token::mint = token_mint,
         token::authority = treasury_token_account,
         seeds = [
-            b"Treasury",
+            LOCKUP_LINEAR_TREASURY.as_ref(),
             token_mint.key().as_ref(),
             &stream_counter.stream_index.to_le_bytes()
         ],
@@ -126,11 +127,7 @@ pub struct CreateLockupLinearStream<'info> {
         init,
         space = ANCHOR_DISCRIMINATOR + LockupLinearStream::INIT_SPACE,
         payer = sender,
-        seeds = [
-            b"LockupLinearStream",
-            sender.key().as_ref(),
-            &stream_counter.stream_index.to_le_bytes()
-        ],
+        seeds = [LOCKUP_LINEAR_STREAM.as_ref(), &stream_counter.stream_index.to_le_bytes()],
         bump
     )]
     pub stream: Account<'info, LockupLinearStream>,

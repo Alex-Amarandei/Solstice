@@ -1,16 +1,18 @@
-use crate::{error::Error, validate_cancel, LockupLinearStream};
+use crate::{
+    extract_stream_counter_index,
+    seeds::{LOCKUP_LINEAR_STREAM, LOCKUP_LINEAR_TREASURY},
+    validate_cancel, LockupLinearStream,
+};
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    mint,
-    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
 
 /// Cancels a lockup linear stream, refunding the appropriate amount to the sender.
 pub fn process_cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream>) -> Result<()> {
-    msg!("Starting lockup linear stream cancelation...");
-
-    // Validate if cancelation is permitted
+    msg!("Validating Cancel Operation... 🛂");
     validate_cancel(ctx.accounts.sender.key(), &ctx.accounts.stream.base_stream)?;
+    msg!("Validation successful ✅ Refunding sender... ⏳");
 
     let cliff_time = ctx.accounts.stream.cliff_time;
     let base_stream = &ctx.accounts.stream.base_stream;
@@ -27,7 +29,7 @@ pub fn process_cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream
             (end_time as f64 - now as f64) / (end_time as f64 - start_time as f64);
         (deposited_amount as f64 * not_elapsed_percentage) as u64
     };
-    msg!("Refundable amount calculated: {}", refundable_amount);
+    msg!("Refundable amount calculated: {} 💰", refundable_amount);
 
     // Transfer the refundable amount
     if refundable_amount > 0 {
@@ -43,7 +45,7 @@ pub fn process_cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream
             extract_stream_counter_index(&ctx.accounts.stream.base_stream.id);
 
         let signer_seeds: &[&[&[u8]]] = &[&[
-            b"Treasury",
+            LOCKUP_LINEAR_TREASURY.as_ref(),
             mint_key.as_ref(),
             &stream_counter_index,
             &[ctx.bumps.treasury_token_account],
@@ -52,9 +54,9 @@ pub fn process_cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream
         let cpi_ctx = CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts)
             .with_signer(signer_seeds);
         transfer_checked(cpi_ctx, refundable_amount, ctx.accounts.token_mint.decimals)?;
-        msg!("Transfer successful.");
+        msg!("Transfer successful 💸");
     } else {
-        msg!("No amount to transfer.");
+        msg!("No amount to transfer 😟");
     }
 
     // Mark stream as canceled
@@ -63,7 +65,7 @@ pub fn process_cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream
     base_stream.is_canceled = true;
     base_stream.is_cancelable = false;
     base_stream.amounts.refunded = refundable_amount;
-    msg!("Stream marked as canceled.");
+    msg!("Stream marked as canceled 🚫");
 
     Ok(())
 }
@@ -77,8 +79,7 @@ pub struct CancelLockupLinearStream<'info> {
     #[account(
         mut,
         seeds = [
-            b"LockupLinearStream",
-            sender.key().as_ref(),
+            LOCKUP_LINEAR_STREAM.as_ref(),
             &extract_stream_counter_index(&stream.base_stream.id)
         ],
         bump
@@ -88,14 +89,9 @@ pub struct CancelLockupLinearStream<'info> {
     #[account(
         mut,
         seeds = [
-            b"Treasury",
+            LOCKUP_LINEAR_TREASURY.as_ref(),
             token_mint.key().as_ref(),
-            &stream.base_stream.id
-                .split('-')
-                .nth(1)
-                .and_then(|index| index.parse::<u64>().ok())
-                .expect(Error::Validation::Stream::InvalidStreamIdFormat.to_string().as_str())
-                .to_le_bytes()
+            &extract_stream_counter_index(&stream.base_stream.id),
         ],
         bump
     )]
@@ -111,16 +107,4 @@ pub struct CancelLockupLinearStream<'info> {
 
     pub token_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
-}
-
-fn extract_stream_counter_index(id: &str) -> [u8; 8] {
-    id.split('-')
-        .nth(1)
-        .and_then(|index| index.parse::<u64>().ok())
-        .expect(
-            Error::Validation::Stream::InvalidStreamIdFormat
-                .to_string()
-                .as_str(),
-        )
-        .to_le_bytes()
 }

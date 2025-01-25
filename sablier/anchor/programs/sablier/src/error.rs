@@ -9,6 +9,15 @@ pub mod Error {
             #[msg("Stream is already canceled")]
             AlreadyCanceled,
 
+            #[msg("The cliff time has not passed yet")]
+            CliffNotEnded,
+
+            #[msg("Stream is empty")]
+            EmptyStream,
+
+            #[msg("Withdrawal amount exceeds available balance")]
+            ExceedsBalance,
+
             #[msg("Amount must be greater than 0")]
             InvalidAmount,
 
@@ -32,6 +41,9 @@ pub mod Error {
 
             #[msg("Stream cancelability is not renounceable after the end time has passed")]
             NotRenounceablePastEndTime,
+
+            #[msg("Stream has not started yet")]
+            StreamNotStarted,
         }
     }
 
@@ -45,6 +57,9 @@ pub mod Error {
 
             #[msg("Only the Stream's Creator can renounce the Stream's cancelability")]
             UnauthorizedRenounce,
+
+            #[msg("Only the Stream's Recipient can withdraw from the Stream")]
+            UnauthorizedWithdraw,
         }
 
         #[error_code]
