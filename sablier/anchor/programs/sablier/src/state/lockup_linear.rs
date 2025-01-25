@@ -1,7 +1,7 @@
 use super::BaseStream;
 use anchor_lang::prelude::*;
 
-/// A lockup linear stream.
+/// A lockup linear stream
 #[account]
 #[derive(InitSpace)]
 pub struct LockupLinearStream {

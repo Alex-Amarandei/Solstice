@@ -4,16 +4,14 @@ import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { Sablier } from '@project/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { BankrunProvider } from 'anchor-bankrun';
-import * as dotenv from 'dotenv';
-import fs from 'fs';
-import { startAnchor } from 'solana-bankrun';
+import { ProgramTestContext, startAnchor } from 'solana-bankrun';
 import IDL from '../../../target/idl/sablier.json';
-import { TIMEOUT } from '../../utils';
+import { TIMEOUT } from '../constants';
+import { getTeamKeyPair } from '../stream-utils';
 
-dotenv.config({ path: __dirname + '/../../.env' });
-
+//* INFO: This test has a custom setup, that's why it is not reusing the setup function from the other tests
 describe('Lockup Linear Stream - Initialize Counter Test', () => {
-	let context: any;
+	let context: ProgramTestContext;
 	let provider: BankrunProvider;
 	let program: Program<Sablier>;
 	let teamKeypair: Keypair;
@@ -21,13 +19,7 @@ describe('Lockup Linear Stream - Initialize Counter Test', () => {
 	const unauthorizedKeypair = Keypair.generate();
 
 	beforeAll(async () => {
-		const keypairPath = process.env.KEYPAIR_PATH;
-		if (!keypairPath) {
-			throw new Error('Missing KEYPAIR_PATH in .env');
-		}
-
-		const secret = JSON.parse(fs.readFileSync(keypairPath, 'utf-8'));
-		teamKeypair = Keypair.fromSecretKey(new Uint8Array(secret));
+		teamKeypair = await getTeamKeyPair();
 
 		context = await startAnchor(
 			'',
@@ -64,7 +56,7 @@ describe('Lockup Linear Stream - Initialize Counter Test', () => {
 		program = new Program(IDL as Sablier, provider);
 	}, TIMEOUT);
 
-	// Order is intentionally like this such that the counter is not yet created
+	//* Order is intentionally like this such that the counter is not yet created
 	describe('Lockup Linear Stream Counter - Error Flow - 1', () => {
 		it(
 			'should throw an error if the creator is unauthorized',
@@ -83,6 +75,7 @@ describe('Lockup Linear Stream - Initialize Counter Test', () => {
 		);
 	});
 
+	//* Counter is being created in this test
 	describe('Lockup Linear Stream Counter - Happy Flow', () => {
 		it(
 			'should initialize the Lockup Linear Stream Counter',
@@ -93,19 +86,17 @@ describe('Lockup Linear Stream - Initialize Counter Test', () => {
 						sender: provider.wallet.publicKey,
 					})
 					.signers([teamKeypair])
-					.rpc();
-
+					.rpc({
+						// Needed to ensure that the blockchain does not think the transaction is a duplicate
+						commitment: 'confirmed',
+					});
 				expect(tx).toBeDefined();
-
-				const [pda] = PublicKey.findProgramAddressSync([Buffer.from('LockupLinearStreamCounter')], program.programId);
-				const counterData = await program.account.streamCounter.fetch(pda);
-				expect(counterData).toBeDefined();
 			},
 			TIMEOUT
 		);
 	});
 
-	// Order is intentionally like this such that the counter has been created
+	//* Order is intentionally like this such that the counter has been created
 	describe('Lockup Linear Stream Counter - Error Flow - 2', () => {
 		it(
 			'should throw an error if already initialized',

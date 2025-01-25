@@ -1,8 +1,33 @@
 import { BN } from '@coral-xyz/anchor';
 import { PublicKey } from '@solana/web3.js';
-import { BanksClient } from 'solana-bankrun';
+import { BanksClient, Clock, ProgramTestContext } from 'solana-bankrun';
 
-export const TIMEOUT = 30_000;
+export async function timeTravelTo(timestamp: number, banksClient: BanksClient, context: ProgramTestContext) {
+	const currentClock = await banksClient.getClock();
+	context.setClock(
+		new Clock(
+			currentClock.slot,
+			currentClock.epochStartTimestamp,
+			currentClock.epoch,
+			currentClock.leaderScheduleEpoch,
+			BigInt(timestamp)
+		)
+	);
+}
+
+export async function timeTravelFor(amount: number, banksClient: BanksClient, context: ProgramTestContext) {
+	const currentClock = await banksClient.getClock();
+	const now = currentClock.unixTimestamp;
+	context.setClock(
+		new Clock(
+			currentClock.slot,
+			currentClock.epochStartTimestamp,
+			currentClock.epoch,
+			currentClock.leaderScheduleEpoch,
+			now + BigInt(amount)
+		)
+	);
+}
 
 export async function getTokenBalanceFor(ata: PublicKey, client: BanksClient): Promise<BN> {
 	console.log('Getting token balance by ATA: ', ata.toBase58());
