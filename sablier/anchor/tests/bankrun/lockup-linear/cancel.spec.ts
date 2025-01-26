@@ -7,6 +7,7 @@ import { Sablier } from '@project/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { getTokenBalanceFor, timeTravelFor, timeTravelTo } from '../bankrun-utils';
 import { TIMEOUT } from '../constants';
+import { now } from '../stream-utils';
 import { beforeAllSetup, createStream } from './setup';
 import { getTreasuryTokenAccount } from './utils';
 
@@ -30,7 +31,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 		it(
 			'should fully refund a stream if canceled before the cliff',
 			async () => {
-				const startTime = Math.floor(Date.now() / 1000) + 5;
+				const startTime = now() + 5;
 				const amount = 1_000;
 
 				// Initial balances
@@ -38,7 +39,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				console.log('Alice Initial Balance: ', aliceInitialBalance.toNumber());
 
 				const [treasuryTokenAccount] = await getTreasuryTokenAccount(tokenMint, program);
-				const [fullRefundStream] = await createStream(alice, bob, tokenMint, program, {
+				const [stream] = await createStream(alice, bob, tokenMint, program, {
 					startTime,
 					endTime: startTime + 60,
 					cliffTime: startTime + 30,
@@ -59,7 +60,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 					.cancelLockupLinearStream()
 					.accounts({
 						sender: alice.publicKey,
-						stream: fullRefundStream,
+						stream,
 						tokenMint,
 						tokenProgram: TOKEN_PROGRAM_ID,
 						treasuryTokenAccount,
@@ -75,7 +76,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				expect(aliceBalanceAfterCancelation.toNumber()).toBe(aliceInitialBalance.toNumber());
 
 				// Verify the stream was canceled
-				const streamData = await program.account.lockupLinearStream.fetch(fullRefundStream);
+				const streamData = await program.account.lockupLinearStream.fetch(stream);
 
 				expect(streamData.baseStream.isCanceled).toBe(true);
 				expect(streamData.baseStream.isCancelable).toBe(false);
@@ -89,7 +90,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 		it(
 			'should partially refund a stream if canceled after the cliff but before the end time',
 			async () => {
-				const startTime = Math.floor(Date.now() / 1000) + 5;
+				const startTime = now() + 5;
 				const amount = 1_000;
 				const cliff_amount = 500;
 
@@ -98,7 +99,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				console.log('Alice Initial Balance: ', aliceInitialBalance.toNumber());
 
 				const [treasuryTokenAccount] = await getTreasuryTokenAccount(tokenMint, program);
-				const [partialRefundStream] = await createStream(alice, bob, tokenMint, program, {
+				const [stream] = await createStream(alice, bob, tokenMint, program, {
 					startTime,
 					endTime: startTime + 60,
 					cliffTime: startTime + 30,
@@ -119,7 +120,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 					.cancelLockupLinearStream()
 					.accounts({
 						sender: alice.publicKey,
-						stream: partialRefundStream,
+						stream,
 						tokenMint,
 						tokenProgram: TOKEN_PROGRAM_ID,
 						treasuryTokenAccount,
@@ -134,7 +135,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 				expect(aliceBalanceAfterCancelation.toNumber()).toBe(aliceBalanceAfterCreation.toNumber() + cliff_amount);
 
 				// Verify the stream was canceled
-				const streamData = await program.account.lockupLinearStream.fetch(partialRefundStream);
+				const streamData = await program.account.lockupLinearStream.fetch(stream);
 
 				expect(streamData.baseStream.isCanceled).toBe(true);
 				expect(streamData.baseStream.isCancelable).toBe(false);
@@ -151,7 +152,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 			"should fail if the sender is not the stream's creator",
 			async () => {
 				const [treasuryTokenAccount] = await getTreasuryTokenAccount(tokenMint, program);
-				const [cancelableLockupLinearStream] = await createStream(alice, bob, tokenMint, program);
+				const [stream] = await createStream(alice, bob, tokenMint, program);
 
 				// Attempt cancellation as Bob
 				// @ts-expect-error - Type error in spl-token-bankrun dependency
@@ -162,7 +163,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 						.cancelLockupLinearStream()
 						.accounts({
 							sender: bob.publicKey,
-							stream: cancelableLockupLinearStream,
+							stream,
 							tokenMint,
 							tokenProgram: TOKEN_PROGRAM_ID,
 							treasuryTokenAccount,
@@ -178,14 +179,14 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 			'should fail if the stream is already canceled',
 			async () => {
 				const [treasuryTokenAccount] = await getTreasuryTokenAccount(tokenMint, program);
-				const [canceledLockupLinearStream] = await createStream(alice, bob, tokenMint, program);
+				const [stream] = await createStream(alice, bob, tokenMint, program);
 
 				// Cancel once
 				const cancelTx = await program.methods
 					.cancelLockupLinearStream()
 					.accounts({
 						sender: alice.publicKey,
-						stream: canceledLockupLinearStream,
+						stream,
 						tokenMint,
 						tokenProgram: TOKEN_PROGRAM_ID,
 						treasuryTokenAccount,
@@ -203,7 +204,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 						.cancelLockupLinearStream()
 						.accounts({
 							sender: alice.publicKey,
-							stream: canceledLockupLinearStream,
+							stream,
 							tokenMint,
 							tokenProgram: TOKEN_PROGRAM_ID,
 							treasuryTokenAccount,
@@ -223,7 +224,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 			'should fail if the stream is not cancelable',
 			async () => {
 				const [treasuryTokenAccount] = await getTreasuryTokenAccount(tokenMint, program);
-				const [notCancelableLockupLinearStream] = await createStream(alice, bob, tokenMint, program, {
+				const [stream] = await createStream(alice, bob, tokenMint, program, {
 					isCancelable: false,
 				});
 
@@ -233,7 +234,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 						.cancelLockupLinearStream()
 						.accounts({
 							sender: alice.publicKey,
-							stream: notCancelableLockupLinearStream,
+							stream,
 							tokenMint,
 							tokenProgram: TOKEN_PROGRAM_ID,
 							treasuryTokenAccount,
@@ -248,10 +249,10 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 		it(
 			'should fail if the stream has already ended',
 			async () => {
-				const startTime = Math.floor(Date.now() / 1000) + 5;
+				const startTime = now() + 5;
 
 				const [treasuryTokenAccount] = await getTreasuryTokenAccount(tokenMint, program);
-				const [endedLockupLinearStream] = await createStream(alice, bob, tokenMint, program, {
+				const [stream] = await createStream(alice, bob, tokenMint, program, {
 					startTime,
 					endTime: startTime + 5, // Ends quickly
 					cliffTime: startTime, // No cliff
@@ -266,7 +267,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 						.cancelLockupLinearStream()
 						.accounts({
 							sender: alice.publicKey,
-							stream: endedLockupLinearStream,
+							stream,
 							tokenMint,
 							tokenProgram: TOKEN_PROGRAM_ID,
 							treasuryTokenAccount,
@@ -280,7 +281,7 @@ describe('Lockup Linear Stream - Cancel Test', () => {
 	});
 
 	afterEach(async () => {
-		const systemClock = Math.floor(Date.now() / 1000);
-		timeTravelTo(systemClock, banksClient, context);
+		// Go back to present
+		timeTravelTo(now(), banksClient, context);
 	});
 });

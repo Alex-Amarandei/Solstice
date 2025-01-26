@@ -3,6 +3,7 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 
 import { Sablier } from '@project/anchor';
 import { STREAM_NAME, TIMEOUT } from '../constants';
+import { now } from '../stream-utils';
 import { beforeAllSetup, createStream } from './setup';
 
 describe('Lockup Linear Stream - Create Test', () => {
@@ -22,10 +23,10 @@ describe('Lockup Linear Stream - Create Test', () => {
 			'should create a lockup linear stream',
 			async () => {
 				// Create a lockup linear stream
-				const startTime = Math.floor(Date.now() / 1000) + 60;
+				const startTime = now() + 60;
 				const options = {
 					streamName: STREAM_NAME,
-					startTime: Math.floor(Date.now() / 1000) + 60,
+					startTime: now() + 60,
 					endTime: startTime + 3600,
 					cliffTime: startTime + 1800,
 					amount: 1_000,
@@ -33,10 +34,10 @@ describe('Lockup Linear Stream - Create Test', () => {
 					isTransferable: true,
 				};
 
-				const [lockupLinearStream] = await createStream(alice, bob, tokenMint, program, options);
+				const [stream] = await createStream(alice, bob, tokenMint, program, options);
 
 				// Verify that all fields in the stream are properly populated
-				const streamData = await program.account.lockupLinearStream.fetch(lockupLinearStream);
+				const streamData = await program.account.lockupLinearStream.fetch(stream);
 
 				expect(streamData.baseStream.id).toBe('LL-0');
 
@@ -77,13 +78,13 @@ describe('Lockup Linear Stream - Create Test', () => {
 		it(
 			'should fail if start time is after cliff time',
 			async () => {
-				const now = Math.floor(Date.now() / 1000);
+				const currentTime = now();
 
 				await expect(
 					createStream(alice, bob, tokenMint, program, {
-						startTime: now + 100,
-						cliffTime: now + 50, // Cliff time before start time
-						endTime: now + 200,
+						startTime: currentTime + 100,
+						cliffTime: currentTime + 50, // Cliff time before start time
+						endTime: currentTime + 200,
 					})
 				).rejects.toThrow(/Cliff time must be between start and end time/);
 			},
@@ -93,13 +94,13 @@ describe('Lockup Linear Stream - Create Test', () => {
 		it(
 			'should fail if start time is after end time',
 			async () => {
-				const now = Math.floor(Date.now() / 1000);
+				const currentTime = now();
 
 				await expect(
 					createStream(alice, bob, tokenMint, program, {
-						startTime: now + 100,
-						cliffTime: now + 200,
-						endTime: now, // End time before start time
+						startTime: currentTime + 100,
+						cliffTime: currentTime + 200,
+						endTime: currentTime, // End time before start time
 					})
 				).rejects.toThrow(/End time must be after start time/);
 			},

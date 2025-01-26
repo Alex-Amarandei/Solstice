@@ -31,8 +31,7 @@ pub fn process_withdraw_from_lockup_linear_stream(
     );
 
     let elapsed_amount = get_elapsed_amount(stream, now);
-    let available_amount =
-        elapsed_amount - stream.base_stream.amounts.withdrawn - stream.base_stream.amounts.refunded;
+    let available_amount = elapsed_amount - stream.base_stream.amounts.withdrawn;
     msg!(
         "Elapsed Amount: {} | Available Amount: {} 🏧",
         elapsed_amount,
@@ -72,6 +71,10 @@ pub fn process_withdraw_from_lockup_linear_stream(
 }
 
 fn get_elapsed_amount(stream: &LockupLinearStream, now: i64) -> u64 {
+    if now >= stream.base_stream.end_time {
+        return stream.base_stream.amounts.deposited;
+    }
+
     let elapsed_time = now - stream.base_stream.start_time;
     let total_time = stream.base_stream.end_time - stream.base_stream.start_time;
     let total_amount = stream.base_stream.amounts.deposited;

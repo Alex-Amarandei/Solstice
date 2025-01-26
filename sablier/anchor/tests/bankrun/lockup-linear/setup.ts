@@ -3,7 +3,7 @@ import { Sablier } from '@project/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { SEEDS, STREAM_NAME } from '../constants';
-import { environmentSetup } from '../stream-utils';
+import { environmentSetup, now } from '../stream-utils';
 import { getStreamCounterIndex } from './utils';
 
 export interface CreateLinearLockupStreamOptions {
@@ -30,7 +30,7 @@ export const createStream = async (
 	// Assign defaults using destructuring
 	const {
 		streamName = STREAM_NAME,
-		startTime = Math.floor(Date.now() / 1000) + 60, // Start in 1 minute
+		startTime = now() + 60, // Start in 1 minute
 		endTime = startTime + 3600, // End in 1 hour
 		cliffTime = startTime + 1800, // Cliff in 30 minutes
 		amount = 1_000, // Default amount: 1K tokens

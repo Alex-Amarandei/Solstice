@@ -83,13 +83,13 @@ pub fn validate_withdraw(recipient: Pubkey, amount: u64, base_stream: &BaseStrea
     );
     require!(amount > 0, Error::Validation::Stream::InvalidAmount);
     require!(
+        base_stream.start_time < Clock::get()?.unix_timestamp,
+        Error::Validation::Stream::StreamNotStarted,
+    );
+    require!(
         base_stream.amounts.deposited
             > base_stream.amounts.withdrawn + base_stream.amounts.refunded,
         Error::Validation::Stream::EmptyStream
-    );
-    require!(
-        base_stream.start_time < Clock::get()?.unix_timestamp,
-        Error::Validation::Stream::StreamNotStarted,
     );
 
     Ok(())

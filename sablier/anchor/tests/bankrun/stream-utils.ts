@@ -11,6 +11,8 @@ import IDL from '../../target/idl/sablier.json';
 
 dotenv.config({ path: __dirname + '/../.env' });
 
+export const now = () => Math.floor(Date.now() / 1000);
+
 export const getStreamCounterIndexWithSeed = async (program: Program<Sablier>, seed: String) => {
 	const [streamCounter] = PublicKey.findProgramAddressSync([Buffer.from(seed)], program.programId);
 	const streamCounterData = await program.account.streamCounter.fetch(streamCounter);
