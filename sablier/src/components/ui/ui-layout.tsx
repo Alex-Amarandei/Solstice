@@ -4,8 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode, Suspense, useEffect, useRef } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
 
+import { toast } from 'sonner';
 import { AccountChecker } from '../account/account-ui';
 import { ClusterChecker, ClusterUiSelect, ExplorerLink } from '../cluster/cluster-ui';
 import { WalletButton } from '../solana/solana-provider';
@@ -55,7 +55,7 @@ export function UiLayout({ children, links }: { children: ReactNode; links: { la
 			<ClusterChecker>
 				<AccountChecker />
 			</ClusterChecker>
-			<div className="flex-grow mx-4 lg:mx-auto">
+			<div className="flex-grow mx-56">
 				<Suspense
 					fallback={
 						<div className="text-center my-32">
@@ -65,7 +65,6 @@ export function UiLayout({ children, links }: { children: ReactNode; links: { la
 				>
 					{children}
 				</Suspense>
-				<Toaster position="bottom-right" />
 			</div>
 		</div>
 	);
@@ -124,7 +123,7 @@ export function AppModal({
 export function AppHero({ children, title, subtitle }: { children?: ReactNode; title: ReactNode; subtitle: ReactNode }) {
 	return (
 		<div className="py-[64px]">
-			<div className="text-center">
+			<div className="text-center justify-items-center">
 				<div className="max-w-2xl">
 					{typeof title === 'string' ? <h1 className="text-5xl font-bold text-white">{title}</h1> : title}
 					{typeof subtitle === 'string' ? <p className="text-2xl py-6 text-white font-medium">{subtitle}</p> : subtitle}

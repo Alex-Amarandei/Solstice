@@ -31,6 +31,7 @@
 		"react-dom": "^18",
 		"react-hot-toast": "^2.4.1",
 		"solana-bankrun": "^0.4.0",
+		"sonner": "^1.7.2",
 		"spl-token-bankrun": "0.2.5"
 	},
 	"devDependencies": {

@@ -1,6 +1,7 @@
 import { ClusterProvider } from '@/components/cluster/cluster-data-access';
 import { SolanaProvider } from '@/components/solana/solana-provider';
 import { UiLayout } from '@/components/ui/ui-layout';
+import { Toaster } from 'sonner';
 import './globals.css';
 import { ReactQueryProvider } from './react-query-provider';
 
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 						</SolanaProvider>
 					</ClusterProvider>
 				</ReactQueryProvider>
+				<Toaster position="top-right" theme="dark" richColors closeButton />
 			</body>
 		</html>
 	);

@@ -10,6 +10,7 @@ const config: Config = {
 				'sablier-gray-text': '#909bb2',
 				'sablier-shadow': '#1b1d29',
 				'sablier-orange': '#f77725',
+				'sablier-dark-orange': '#f7802b',
 			},
 		},
 	},
