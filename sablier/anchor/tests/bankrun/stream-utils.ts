@@ -1,6 +1,5 @@
 import { BN, Program, setProvider } from '@coral-xyz/anchor';
 import { SYSTEM_PROGRAM_ID } from '@coral-xyz/anchor/dist/cjs/native/system';
-import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { Sablier } from '@project/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { BankrunProvider } from 'anchor-bankrun';
@@ -20,7 +19,7 @@ export const getStreamCounterIndexWithSeed = async (program: Program<Sablier>, s
 };
 
 export const getTreasuryTokenAccountWithSeeds = async (
-	mint: PublicKey,
+	tokenMint: PublicKey,
 	program: Program<Sablier>,
 	treasurySeed: String,
 	counterSeed: String
@@ -28,7 +27,7 @@ export const getTreasuryTokenAccountWithSeeds = async (
 	const streamCounterIndex = await getStreamCounterIndexWithSeed(program, counterSeed);
 
 	return PublicKey.findProgramAddressSync(
-		[Buffer.from(treasurySeed), mint.toBuffer(), new BN(streamCounterIndex).toArrayLike(Buffer, 'le', 8)],
+		[Buffer.from(treasurySeed), tokenMint.toBuffer(), new BN(streamCounterIndex).toArrayLike(Buffer, 'le', 8)],
 		program.programId
 	);
 };
@@ -54,9 +53,8 @@ export const environmentSetup = async (seed: String) => {
 	let aliceTokenAccount: PublicKey;
 
 	let bob: Keypair;
-	let bobProvider: BankrunProvider;
 
-	let mint: PublicKey;
+	let tokenMint: PublicKey;
 
 	let streamCounter: PublicKey;
 
@@ -107,19 +105,16 @@ export const environmentSetup = async (seed: String) => {
 
 	// Create token mint and associated token accounts
 	// @ts-expect-error - Type error in spl-token-bankrun dependency
-	mint = await createMint(banksClient, alice, alice.publicKey, null, 9); // Mint with 9 decimals
-	// @ts-expect-error - Type error in spl-token-bankrun dependency
-	aliceTokenAccount = await createAssociatedTokenAccount(banksClient, alice, mint, alice.publicKey);
+	tokenMint = await createMint(banksClient, alice, alice.publicKey, null, 9); // Mint with 9 decimals
 
-	// Initialize Bob provider for testing
-	bobProvider = new BankrunProvider(context);
-	bobProvider.wallet = new NodeWallet(bob);
+	// @ts-expect-error - Type error in spl-token-bankrun dependency
+	aliceTokenAccount = await createAssociatedTokenAccount(banksClient, alice, tokenMint, alice.publicKey);
 
 	[streamCounter] = PublicKey.findProgramAddressSync([Buffer.from(seed)], program.programId);
 
 	// Mint tokens to Alice's token account for testing
 	// @ts-expect-error - Type error in spl-token-bankrun dependency
-	await mintTo(banksClient, alice, mint, aliceTokenAccount, alice, 1_000_000_000_000);
+	await mintTo(banksClient, alice, tokenMint, aliceTokenAccount, alice, 1_000_000_000_000);
 
 	// Initialize the LockupLinearStreamCounter once
 	const tx = await program.methods
@@ -137,9 +132,8 @@ export const environmentSetup = async (seed: String) => {
 		aliceTokenAccount,
 		banksClient,
 		bob,
-		bobProvider,
 		context,
-		mint,
+		tokenMint,
 		program,
 		provider,
 		streamCounter,

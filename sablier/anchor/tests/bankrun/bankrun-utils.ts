@@ -29,16 +29,11 @@ export async function timeTravelFor(amount: number, banksClient: BanksClient, co
 	);
 }
 
-export async function getTokenBalanceFor(ata: PublicKey, client: BanksClient): Promise<BN> {
-	console.log('Getting token balance by ATA: ', ata.toBase58());
+export async function getTokenBalanceFor(account: PublicKey, client: BanksClient): Promise<BN> {
+	console.log('Getting token balance by account: ', account.toBase58());
+	const accountData = (await client.getAccount(account))?.data;
 
-	const acc = await client.getAccount(ata);
-
-	console.log('Account: ', acc);
-
-	const ataData = (await client.getAccount(ata))?.data;
-
-	return new BN(getTokenBalanceForAccountData(ataData!));
+	return new BN(getTokenBalanceForAccountData(accountData!));
 }
 
 function getTokenBalanceForAccountData(ataData: Uint8Array): string {

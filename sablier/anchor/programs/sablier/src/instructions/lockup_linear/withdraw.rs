@@ -71,6 +71,17 @@ pub fn process_withdraw_from_lockup_linear_stream(
     Ok(())
 }
 
+fn get_elapsed_amount(stream: &LockupLinearStream, now: i64) -> u64 {
+    let elapsed_time = now - stream.base_stream.start_time;
+    let total_time = stream.base_stream.end_time - stream.base_stream.start_time;
+    let total_amount = stream.base_stream.amounts.deposited;
+
+    let elapsed_percentage = elapsed_time as f64 / total_time as f64;
+
+    (elapsed_percentage * total_amount as f64) as u64
+}
+
+/// Accounts for `withdraw_from_lockup_linear_stream`
 #[derive(Accounts)]
 pub struct WithdrawFromLockupLinearStream<'info> {
     #[account(mut)]
@@ -99,7 +110,8 @@ pub struct WithdrawFromLockupLinearStream<'info> {
     pub treasury_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = recipient,
         associated_token::mint = token_mint,
         associated_token::authority = recipient,
         associated_token::token_program = token_program,
@@ -107,16 +119,7 @@ pub struct WithdrawFromLockupLinearStream<'info> {
     pub recipient_token_account: InterfaceAccount<'info, TokenAccount>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
     pub token_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
-}
-
-fn get_elapsed_amount(stream: &LockupLinearStream, now: i64) -> u64 {
-    let elapsed_time = now - stream.base_stream.start_time;
-    let total_time = stream.base_stream.end_time - stream.base_stream.start_time;
-    let total_amount = stream.base_stream.amounts.deposited;
-
-    let elapsed_percentage = elapsed_time as f64 / total_time as f64;
-
-    (elapsed_percentage * total_amount as f64) as u64
 }

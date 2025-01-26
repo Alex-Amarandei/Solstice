@@ -17,17 +17,17 @@ describe('Lockup Linear Stream - Renounce Test', () => {
 	let alice: Keypair;
 	let bob: Keypair;
 
-	let mint: PublicKey;
+	let tokenMint: PublicKey;
 
 	beforeAll(async () => {
-		({ alice, banksClient, bob, context, mint, program } = await beforeAllSetup());
+		({ alice, banksClient, bob, context, tokenMint, program } = await beforeAllSetup());
 	}, TIMEOUT);
 
 	describe('Lockup Linear Stream - Renounce - Happy Flow', () => {
 		it(
 			'should renounce cancelability for a cancelable stream',
 			async () => {
-				const [cancelableLockupLinearStream] = await createStream(alice, bob, mint, program);
+				const [cancelableLockupLinearStream] = await createStream(alice, bob, tokenMint, program);
 
 				// Renounce cancelability for the stream
 				const renounceCancelableStreamTx = await program.methods
@@ -55,7 +55,7 @@ describe('Lockup Linear Stream - Renounce Test', () => {
 		it(
 			"should fail if the sender is not the stream's creator",
 			async () => {
-				const [cancelableLockupLinearStream] = await createStream(alice, bob, mint, program);
+				const [cancelableLockupLinearStream] = await createStream(alice, bob, tokenMint, program);
 
 				// Renounce cancelability for the stream
 				await expect(
@@ -75,8 +75,8 @@ describe('Lockup Linear Stream - Renounce Test', () => {
 		it(
 			'should fail if the stream is already canceled',
 			async () => {
-				const [treasuryTokenAccount] = await getTreasuryTokenAccount(mint, program);
-				const [canceledLockupLinearStream] = await createStream(alice, bob, mint, program);
+				const [treasuryTokenAccount] = await getTreasuryTokenAccount(tokenMint, program);
+				const [canceledLockupLinearStream] = await createStream(alice, bob, tokenMint, program);
 
 				// Send the cancelStream transaction
 				const cancelLockupLinearStreamTx = await program.methods
@@ -84,7 +84,7 @@ describe('Lockup Linear Stream - Renounce Test', () => {
 					.accounts({
 						sender: alice.publicKey,
 						stream: canceledLockupLinearStream,
-						tokenMint: mint,
+						tokenMint,
 						tokenProgram: TOKEN_PROGRAM_ID,
 						treasuryTokenAccount,
 					})
@@ -117,7 +117,7 @@ describe('Lockup Linear Stream - Renounce Test', () => {
 		it(
 			'should fail if the stream is not cancelable',
 			async () => {
-				const [notCancelableLockupLinearStream] = await createStream(alice, bob, mint, program, { isCancelable: false });
+				const [notCancelableLockupLinearStream] = await createStream(alice, bob, tokenMint, program, { isCancelable: false });
 
 				// Renounce cancelability for the stream
 				await expect(
@@ -138,7 +138,7 @@ describe('Lockup Linear Stream - Renounce Test', () => {
 			'should fail if the stream has already ended',
 			async () => {
 				const startTime = Math.floor(Date.now() / 1000) + 10;
-				const [endedLockupLinearStream] = await createStream(alice, bob, mint, program, {
+				const [endedLockupLinearStream] = await createStream(alice, bob, tokenMint, program, {
 					startTime, // Start in 10 seconds
 					endTime: startTime + 5, // 5-second duration
 					cliffTime: startTime, // No cliff

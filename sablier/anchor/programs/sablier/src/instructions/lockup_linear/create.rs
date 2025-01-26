@@ -86,7 +86,7 @@ pub fn process_create_lockup_linear_stream(
     Ok(())
 }
 
-/// Context for creating a lockup linear stream.
+/// Context for creating a lockup linear stream
 #[derive(Accounts)]
 pub struct CreateLockupLinearStream<'info> {
     #[account(mut)]

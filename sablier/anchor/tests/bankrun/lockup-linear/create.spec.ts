@@ -11,10 +11,10 @@ describe('Lockup Linear Stream - Create Test', () => {
 	let alice: Keypair;
 	let bob: Keypair;
 
-	let mint: PublicKey;
+	let tokenMint: PublicKey;
 
 	beforeAll(async () => {
-		({ alice, bob, mint, program } = await beforeAllSetup());
+		({ alice, bob, tokenMint, program } = await beforeAllSetup());
 	}, TIMEOUT);
 
 	describe('Lockup Linear Stream - Create - Happy Flow', () => {
@@ -33,7 +33,7 @@ describe('Lockup Linear Stream - Create Test', () => {
 					isTransferable: true,
 				};
 
-				const [lockupLinearStream] = await createStream(alice, bob, mint, program, options);
+				const [lockupLinearStream] = await createStream(alice, bob, tokenMint, program, options);
 
 				// Verify that all fields in the stream are properly populated
 				const streamData = await program.account.lockupLinearStream.fetch(lockupLinearStream);
@@ -43,7 +43,7 @@ describe('Lockup Linear Stream - Create Test', () => {
 				expect(streamData.baseStream.sender.toBase58()).toBe(alice.publicKey.toBase58());
 				expect(streamData.baseStream.recipient.toBase58()).toBe(bob.publicKey.toBase58());
 
-				expect(streamData.baseStream.tokenMint.toBase58()).toBe(mint.toBase58());
+				expect(streamData.baseStream.tokenMint.toBase58()).toBe(tokenMint.toBase58());
 
 				expect(streamData.baseStream.amounts.deposited.toNumber()).toBe(options.amount);
 				expect(streamData.baseStream.amounts.refunded.toNumber()).toBe(0);
@@ -66,7 +66,7 @@ describe('Lockup Linear Stream - Create Test', () => {
 			'should fail if start time is in the past',
 			async () => {
 				await expect(
-					createStream(alice, bob, mint, program, {
+					createStream(alice, bob, tokenMint, program, {
 						startTime: 0, // Start time in the past
 					})
 				).rejects.toThrow(/Start time must not be in the past/);
@@ -80,7 +80,7 @@ describe('Lockup Linear Stream - Create Test', () => {
 				const now = Math.floor(Date.now() / 1000);
 
 				await expect(
-					createStream(alice, bob, mint, program, {
+					createStream(alice, bob, tokenMint, program, {
 						startTime: now + 100,
 						cliffTime: now + 50, // Cliff time before start time
 						endTime: now + 200,
@@ -96,7 +96,7 @@ describe('Lockup Linear Stream - Create Test', () => {
 				const now = Math.floor(Date.now() / 1000);
 
 				await expect(
-					createStream(alice, bob, mint, program, {
+					createStream(alice, bob, tokenMint, program, {
 						startTime: now + 100,
 						cliffTime: now + 200,
 						endTime: now, // End time before start time
@@ -110,7 +110,7 @@ describe('Lockup Linear Stream - Create Test', () => {
 			'should fail if amount is zero',
 			async () => {
 				await expect(
-					createStream(alice, bob, mint, program, {
+					createStream(alice, bob, tokenMint, program, {
 						amount: 0, // Amount is zero
 					})
 				).rejects.toThrow(/Amount must be greater than 0/);

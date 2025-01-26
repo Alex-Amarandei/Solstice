@@ -70,7 +70,7 @@ pub fn process_cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream
     Ok(())
 }
 
-/// Accounts for `cancel_lockup_linear_stream`.
+/// Accounts for `cancel_lockup_linear_stream`
 #[derive(Accounts)]
 pub struct CancelLockupLinearStream<'info> {
     #[account(mut)]

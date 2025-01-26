@@ -23,7 +23,7 @@ export const beforeAllSetup = async () => {
 export const createStream = async (
 	sender: Keypair,
 	recipient: Keypair,
-	mint: PublicKey,
+	tokenMint: PublicKey,
 	program: Program<Sablier>,
 	options: CreateLinearLockupStreamOptions = {}
 ) => {
@@ -39,7 +39,7 @@ export const createStream = async (
 	} = options;
 
 	// Get the stream counter index for the stream to be created
-	const streamCounterIndex = await getStreamCounterIndex(program); // Ensure this function is defined
+	const streamCounterIndex = await getStreamCounterIndex(program);
 
 	// Send the createStream transaction
 	const createStreamTx = await program.methods
@@ -55,7 +55,7 @@ export const createStream = async (
 		)
 		.accounts({
 			sender: sender.publicKey,
-			tokenMint: mint,
+			tokenMint,
 			tokenProgram: TOKEN_PROGRAM_ID,
 		})
 		.signers([sender])

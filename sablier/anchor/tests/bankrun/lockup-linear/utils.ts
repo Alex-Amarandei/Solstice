@@ -11,6 +11,6 @@ export const getStreamCounterIndex = async (program: Program<Sablier>) => {
 //! Must be used before creating the stream since it gets the Stream Counter Index
 //! which is used TO CREATE the stream
 //! Calling this after creating the stream will result in it using a future counter index
-export const getTreasuryTokenAccount = async (mint: PublicKey, program: Program<Sablier>) => {
-	return getTreasuryTokenAccountWithSeeds(mint, program, SEEDS.LOCKUP_LINEAR.TREASURY, SEEDS.LOCKUP_LINEAR.COUNTER);
+export const getTreasuryTokenAccount = async (tokenMint: PublicKey, program: Program<Sablier>) => {
+	return getTreasuryTokenAccountWithSeeds(tokenMint, program, SEEDS.LOCKUP_LINEAR.TREASURY, SEEDS.LOCKUP_LINEAR.COUNTER);
 };
