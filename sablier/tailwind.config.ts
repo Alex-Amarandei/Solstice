@@ -11,6 +11,10 @@ const config: Config = {
 				'sablier-shadow': '#1b1d29',
 				'sablier-orange': '#f77725',
 				'sablier-dark-orange': '#f7802b',
+				'sablier-card': '#30354a',
+			},
+			backgroundImage: {
+				'sablier-orange-gradient': 'linear-gradient(90deg, #ff7300, #ff9C00, #ffb800)',
 			},
 		},
 	},

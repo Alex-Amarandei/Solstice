@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 						</SolanaProvider>
 					</ClusterProvider>
 				</ReactQueryProvider>
-				<Toaster position="top-right" theme="dark" richColors closeButton />
+				<Toaster position="bottom-right" theme="dark" richColors closeButton />
 			</body>
 		</html>
 	);

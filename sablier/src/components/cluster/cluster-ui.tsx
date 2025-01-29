@@ -5,11 +5,13 @@ import { Connection } from '@solana/web3.js';
 import { IconTrash } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 import { AppModal } from '../ui/ui-layout';
 import { ClusterNetwork, useCluster } from './cluster-data-access';
 
 export function ExplorerLink({ path, label, className }: { path: string; label: string; className?: string }) {
 	const { getExplorerUrl } = useCluster();
+
 	return (
 		<a href={getExplorerUrl(path)} target="_blank" rel="noopener noreferrer" className={className ? className : `link font-mono`}>
 			{label}
@@ -30,16 +32,15 @@ export function ClusterChecker({ children }: { children: ReactNode }) {
 		return null;
 	}
 	if (query.isError || !query.data) {
-		return (
-			<div className="alert alert-warning text-warning-content/80 rounded-none flex justify-center">
-				<span>
-					Error connecting to cluster <strong>{cluster.name}</strong>
-				</span>
-				<button className="btn btn-xs btn-neutral" onClick={() => query.refetch()}>
-					Refresh
-				</button>
-			</div>
-		);
+		// Show a toast with a "Request Airdrop" action
+		toast.error(`Error connecting to cluster ${cluster.name}. 🌐`, {
+			action: {
+				label: 'Refresh 🔄',
+				onClick: () => query.refetch(),
+			},
+		});
+
+		return null;
 	}
 	return children;
 }
@@ -52,7 +53,7 @@ export function ClusterUiSelect() {
 			{/* Dropdown Toggle */}
 			<label
 				tabIndex={0}
-				className="flex items-center justify-center bg-sablier-dark-orange text-white font-semibold px-4 py-2 rounded-lg cursor-pointer shadow-md hover:bg-sablier-dark-orange transition w-full"
+				className="flex items-center justify-center bg-sablier-orange-gradient text-white font-semibold px-4 py-2 rounded-lg cursor-pointer shadow-md hover:bg-sablier-dark-orange transition w-full"
 				style={{ minWidth: 'max-content' }}
 			>
 				{cluster.name}
