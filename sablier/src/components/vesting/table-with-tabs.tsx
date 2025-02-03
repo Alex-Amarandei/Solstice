@@ -1,9 +1,13 @@
+import { getElapsedAmount } from '@/utils/math';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { formatAmount, formatNumberAmount, formatShortenPubkey, formatStreamState, formatTimeline } from '../../utils/formatting';
+import { useLockupLinearProgram } from './vesting-data-access';
 
 export function TableWithTabs() {
-	const [activeTab, setActiveTab] = useState('all');
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const { lockupLinearStreams } = useLockupLinearProgram();
+	const router = useRouter();
 
 	const tabs = [
 		{ id: 'all', label: 'All' },
@@ -38,31 +42,11 @@ export function TableWithTabs() {
 				</div>
 				<button
 					className="px-10 py-3 mb-2 bg-sablier-dark-orange text-white font-semibold rounded-lg transition hover:bg-sablier-orange"
-					onClick={() => toast.info('Create Stream')}
+					onClick={() => router.push('/vesting/create')}
 				>
 					Create Stream
 				</button>
 			</div>
-
-			{/* Modal for Search */}
-			{isModalOpen && (
-				<div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-50">
-					<div className="bg-gray-800 p-6 rounded-lg w-1/3">
-						<h2 className="text-white text-lg mb-4">Search Stream</h2>
-						<input
-							type="text"
-							placeholder="Enter Stream ID"
-							className="input input-bordered w-full bg-gray-900 text-white p-3 rounded-lg mb-4 border-gray-700"
-						/>
-						<div className="flex justify-end space-x-4">
-							<button className="btn bg-gray-700 text-gray-400 px-6 py-2 rounded-lg" onClick={() => setIsModalOpen(false)}>
-								Cancel
-							</button>
-							<button className="btn bg-orange-500 text-white px-6 py-2 rounded-lg">Search</button>
-						</div>
-					</div>
-				</div>
-			)}
 
 			{/* Table */}
 			<div className="overflow-x-auto bg-sablier-black rounded-tr-lg rounded-b-lg shadow-lg">
@@ -78,39 +62,22 @@ export function TableWithTabs() {
 						</tr>
 					</thead>
 					<tbody>
-						{/* Example Row */}
-						<tr className="border-t border-sablier-gray hover:bg-sablier-gray">
-							<td className="pl-8 pr-4 py-4">Streaming</td>
-							<td className="px-4 py-4">0x123...789 / 0xabc...def</td>
-							<td className="px-4 py-4">$10,000</td>
-							<td className="px-4 py-4">Oct 2024 - Feb 2025</td>
-							<td className="px-4 py-4">50%</td>
-							<td className="px-4 py-4">
-								<button className="text-orange-500 hover:underline">View</button>
-							</td>
-						</tr>
-						<tr className="border-t border-sablier-gray hover:bg-sablier-gray">
-							<td className="pl-8 pr-4 py-4">Streaming</td>
-							<td className="px-4 py-4">0x123...789 / 0xabc...def</td>
-							<td className="px-4 py-4">$10,000</td>
-							<td className="px-4 py-4">Oct 2024 - Feb 2025</td>
-							<td className="px-4 py-4">50%</td>
-							<td className="px-4 py-4">
-								<button className="text-orange-500 hover:underline">View</button>
-							</td>
-						</tr>
-						<tr className="border-t border-sablier-gray hover:bg-sablier-gray">
-							<td className="pl-8 pr-4 py-4">Streaming</td>
-							<td className="px-4 py-4">0x123...789 / 0xabc...def</td>
-							<td className="px-4 py-4">$10,000</td>
-							<td className="px-4 py-4">Oct 2024 - Feb 2025</td>
-							<td className="px-4 py-4">50%</td>
-							<td className="px-4 py-4">
-								<button className="text-orange-500 hover:underline">View</button>
-							</td>
-						</tr>
-
-						{/* Add more rows as needed */}
+						{lockupLinearStreams?.data?.map(({ account, publicKey }) => (
+							<tr key={publicKey.toBase58()} className="border-t border-sablier-gray hover:bg-sablier-gray">
+								<td className="pl-8 pr-4 py-4">{formatStreamState(account)}</td>
+								<td className="px-4 py-4">
+									{formatShortenPubkey(account.baseStream.sender)} / {formatShortenPubkey(account.baseStream.recipient)}
+								</td>
+								<td className="px-4 py-4">{formatAmount(account.baseStream.amounts.deposited)}</td>
+								<td className="px-4 py-4">
+									{formatTimeline(account.baseStream.startTime, account.baseStream.endTime, account.cliffTime)}
+								</td>
+								<td className="px-4 py-4">{formatNumberAmount(getElapsedAmount(account))}</td>
+								<td className="px-4 py-4">
+									<button className="text-orange-500 hover:underline">View</button>
+								</td>
+							</tr>
+						))}
 					</tbody>
 				</table>
 			</div>

@@ -17,7 +17,7 @@ export function useCounterProgram() {
 	const program = useMemo(() => getSablierProgram(provider, programId), [provider, programId]);
 
 	const streamCounterAccounts = useQuery({
-		queryKey: ['sablier', 'all', { cluster }],
+		queryKey: ['streamCounter', 'all', { cluster }],
 		queryFn: () => program.account.streamCounter.all(),
 	});
 

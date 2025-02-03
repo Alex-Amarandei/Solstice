@@ -1,7 +1,5 @@
 'use client';
 
-import { WalletButton } from '../solana/solana-provider';
-
 interface CounterCreateProps {
 	onCreate: () => void;
 	isPending: boolean;
@@ -10,16 +8,6 @@ interface CounterCreateProps {
 interface CounterListProps {
 	authority: string;
 	index: number;
-}
-
-export function CounterNotConnected() {
-	return (
-		<div className="flex flex-col items-center justify-center min-h-screen p-8">
-			<h1 className="text-5xl font-bold text-white">🛑 Wo-oh, hold up, amigo! 🛑</h1>
-			<p className="my-8 text-xl text-white">You need a wallet to proceed. Connect your wallet to get started!</p>
-			<WalletButton />
-		</div>
-	);
 }
 
 export function CounterCreate({ onCreate, isPending }: CounterCreateProps) {

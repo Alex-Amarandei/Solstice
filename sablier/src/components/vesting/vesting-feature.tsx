@@ -1,13 +1,15 @@
 'use client';
 
+import { Breadcrumb, NotConnected } from '@/components/ui/ui-common';
+import { TableWithTabs } from '@/components/vesting/table-with-tabs';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { Breadcrumb } from './breadcrumb';
-import { useSablierProgram } from './sablier-data-access';
-import { TableWithTabs } from './table-with-tabs';
 
 export default function VestingFeature() {
 	const { publicKey } = useWallet();
-	const { programId } = useSablierProgram();
+
+	if (!publicKey) {
+		return <NotConnected />;
+	}
 
 	return (
 		<div className="w-full flex flex-col">

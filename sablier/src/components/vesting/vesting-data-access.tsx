@@ -1,16 +1,16 @@
 'use client';
 
+import { LockupLinearStream } from '@/types/lockup-linear';
 import { getSablierProgram, getSablierProgramId } from '@project/anchor';
 import { useConnection } from '@solana/wallet-adapter-react';
 import { Cluster, PublicKey } from '@solana/web3.js';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import toast from 'react-hot-toast';
 import { useCluster } from '../cluster/cluster-data-access';
 import { useAnchorProvider } from '../solana/solana-provider';
 import { useTransactionToast } from '../ui/ui-layout';
 
-export function useSablierProgram() {
+export function useLockupLinearProgram() {
 	const { connection } = useConnection();
 	const { cluster } = useCluster();
 	const transactionToast = useTransactionToast();
@@ -18,39 +18,34 @@ export function useSablierProgram() {
 	const programId = useMemo(() => getSablierProgramId(cluster.network as Cluster), [cluster]);
 	const program = useMemo(() => getSablierProgram(provider, programId), [provider, programId]);
 
-	const accounts = useQuery({
-		queryKey: ['sablier', 'all', { cluster }],
-		queryFn: () => program.account.streamCounter.all(),
+	const lockupLinearStreams = useQuery({
+		queryKey: ['lockupLinear', 'all', { cluster }],
+		queryFn: () => program.account.lockupLinearStream.all(),
 	});
 
-	const getProgramAccount = useQuery({
-		queryKey: ['get-program-account', { cluster }],
-		queryFn: () => connection.getParsedAccountInfo(programId),
-	});
-
-	const initialize = useMutation({
-		mutationKey: ['sablier', 'initialize', { cluster }],
-		mutationFn: (publicKey: PublicKey) => program.methods.initializeLockupLinearStreamCounter().accounts({ sender: publicKey }).rpc(),
-		onSuccess: (signature) => {
-			transactionToast(signature);
-			return accounts.refetch();
+	const createLockupLinearStream = useMutation({
+		mutationKey: ['lockupLinear', 'create', { cluster }],
+		mutationFn: (lockupLinearStream: LockupLinearStream) => program.methods.createLockupLinearStream(lockupLinearStream).rpc(),
+		onMutate: async (lockupLinearStream) => {
+			await lockupLinearStreams.refetch();
 		},
-		onError: () => toast.error('Failed to initialize account'),
+		onSuccess: (tx) => {
+			transactionToast(tx);
+			lockupLinearStreams.refetch();
+		},
 	});
 
 	return {
 		program,
-		programId,
-		accounts,
-		getProgramAccount,
-		initialize,
+		createLockupLinearStream,
+		lockupLinearStreams,
 	};
 }
 
-export function useSablierProgramAccount({ account }: { account: PublicKey }) {
+export function useLockupLinearProgramAccount({ account }: { account: PublicKey }) {
 	const { cluster } = useCluster();
 	const transactionToast = useTransactionToast();
-	const { program, accounts } = useSablierProgram();
+	const { program, lockupLinearStreams } = useLockupLinearProgram();
 
 	const accountQuery = useQuery({
 		queryKey: ['sablier', 'fetch', { cluster, account }],

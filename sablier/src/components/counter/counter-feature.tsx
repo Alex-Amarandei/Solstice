@@ -1,8 +1,9 @@
 'use client';
 
-import { CounterCreate, CounterList, CounterNotConnected } from '@/components/counter/counter-ui';
+import { CounterCreate, CounterList } from '@/components/counter/counter-ui';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect, useState } from 'react';
+import { NotConnected } from '../ui/ui-common';
 import { useCounterProgram } from './counter-data-access';
 
 export default function CounterFeature() {
@@ -17,7 +18,7 @@ export default function CounterFeature() {
 	}, [streamCounterAccounts]);
 
 	if (!publicKey) {
-		return <CounterNotConnected />;
+		return <NotConnected />;
 	}
 
 	return (

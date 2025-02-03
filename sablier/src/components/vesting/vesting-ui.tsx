@@ -1,7 +1,7 @@
 'use client';
 
 // export function SablierList() {
-// 	const { accounts, getProgramAccount } = useSablierProgram();
+// 	const { accounts, getProgramAccount } = useLockupLinearProgram();
 
 // 	if (getProgramAccount.isLoading) {
 // 		return <span className="loading loading-spinner loading-lg"></span>;
@@ -34,7 +34,7 @@
 // }
 
 // function SablierCard({ account }: { account: PublicKey }) {
-// 	const { accountQuery } = useSablierProgramAccount({
+// 	const { accountQuery } = useLockupLinearProgramAccount({
 // 		account,
 // 	});
 
