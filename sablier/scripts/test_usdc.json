@@ -1,0 +1,6 @@
+{
+	"name": "Test USDC",
+	"symbol": "USDC",
+	"description": "Test USDC Token",
+	"image": "https://raw.githubusercontent.com/Alex-Amarandei/Learning-Solana/ca937a0af3d5ab83798280552e56c33a52af8346/5-creating-a-token/leo-token-logo.png"
+}
