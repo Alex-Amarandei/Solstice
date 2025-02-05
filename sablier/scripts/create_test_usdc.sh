@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # solana-keygen grind --starts-with mnt:1
-# This resulted in mntwikCmYs2USRwa9TtAqeJR1r9rc3mvaQbmbQmsFo7.json
+# This resulted in mntPMTbkKfo4ht5ccjsxqAXKapEqu84on5mxsJCwfdf.json
 
 spl-token create-token --program-id TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --enable-metadata mntPMTbkKfo4ht5ccjsxqAXKapEqu84on5mxsJCwfdf.json
 

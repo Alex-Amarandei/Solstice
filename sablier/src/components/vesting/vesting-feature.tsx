@@ -1,7 +1,7 @@
 'use client';
 
 import { Breadcrumb, NotConnected } from '@/components/ui/ui-common';
-import { TableWithTabs } from '@/components/vesting/table-with-tabs';
+import { TableWithTabs } from '@/components/vesting/vesting-ui';
 import { useWallet } from '@solana/wallet-adapter-react';
 
 export default function VestingFeature() {

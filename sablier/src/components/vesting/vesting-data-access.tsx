@@ -1,17 +1,20 @@
 'use client';
 
-import { LockupLinearStream } from '@/types/lockup-linear';
+import { CreateLockupLinearStreamArgs } from '@/utils/conversion';
 import { getSablierProgram, getSablierProgramId } from '@project/anchor';
-import { useConnection } from '@solana/wallet-adapter-react';
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { Cluster, PublicKey } from '@solana/web3.js';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { toast } from 'sonner';
 import { useCluster } from '../cluster/cluster-data-access';
 import { useAnchorProvider } from '../solana/solana-provider';
 import { useTransactionToast } from '../ui/ui-layout';
 
 export function useLockupLinearProgram() {
-	const { connection } = useConnection();
+	const { publicKey } = useWallet();
+
 	const { cluster } = useCluster();
 	const transactionToast = useTransactionToast();
 	const provider = useAnchorProvider();
@@ -25,13 +28,33 @@ export function useLockupLinearProgram() {
 
 	const createLockupLinearStream = useMutation({
 		mutationKey: ['lockupLinear', 'create', { cluster }],
-		mutationFn: (lockupLinearStream: LockupLinearStream) => program.methods.createLockupLinearStream(lockupLinearStream).rpc(),
-		onMutate: async (lockupLinearStream) => {
+		mutationFn: (stream: CreateLockupLinearStreamArgs) =>
+			program.methods
+				.createLockupLinearStream(
+					stream.name,
+					stream.recipient,
+					stream.amount,
+					stream.startTime,
+					stream.endTime,
+					stream.cliffTime,
+					stream.isCancelable,
+					stream.isTransferable
+				)
+				.accounts({
+					sender: publicKey!,
+					tokenMint: stream.tokenMint,
+					tokenProgram: TOKEN_2022_PROGRAM_ID,
+				})
+				.rpc(),
+		onMutate: async () => {
 			await lockupLinearStreams.refetch();
 		},
 		onSuccess: (tx) => {
 			transactionToast(tx);
 			lockupLinearStreams.refetch();
+		},
+		onError: (error) => {
+			toast.error(error.message);
 		},
 	});
 
@@ -44,55 +67,14 @@ export function useLockupLinearProgram() {
 
 export function useLockupLinearProgramAccount({ account }: { account: PublicKey }) {
 	const { cluster } = useCluster();
-	const transactionToast = useTransactionToast();
-	const { program, lockupLinearStreams } = useLockupLinearProgram();
+	const { program } = useLockupLinearProgram();
 
 	const accountQuery = useQuery({
 		queryKey: ['sablier', 'fetch', { cluster, account }],
 		queryFn: () => program.account.streamCounter.fetch(account),
 	});
 
-	// const closeMutation = useMutation({
-	// 	mutationKey: ['sablier', 'close', { cluster, account }],
-	// 	mutationFn: () => program.methods.close().accounts({ sablier: account }).rpc(),
-	// 	onSuccess: (tx) => {
-	// 		transactionToast(tx);
-	// 		return accounts.refetch();
-	// 	},
-	// });
-
-	// const decrementMutation = useMutation({
-	// 	mutationKey: ['sablier', 'decrement', { cluster, account }],
-	// 	mutationFn: () => program.methods.decrement().accounts({ sablier: account }).rpc(),
-	// 	onSuccess: (tx) => {
-	// 		transactionToast(tx);
-	// 		return accountQuery.refetch();
-	// 	},
-	// });
-
-	// const incrementMutation = useMutation({
-	// 	mutationKey: ['sablier', 'increment', { cluster, account }],
-	// 	mutationFn: () => program.methods.increment().accounts({ sablier: account }).rpc(),
-	// 	onSuccess: (tx) => {
-	// 		transactionToast(tx);
-	// 		return accountQuery.refetch();
-	// 	},
-	// });
-
-	// const setMutation = useMutation({
-	// 	mutationKey: ['sablier', 'set', { cluster, account }],
-	// 	mutationFn: (value: number) => program.methods.set(value).accounts({ sablier: account }).rpc(),
-	// 	onSuccess: (tx) => {
-	// 		transactionToast(tx);
-	// 		return accountQuery.refetch();
-	// 	},
-	// });
-
 	return {
 		accountQuery,
-		// closeMutation,
-		// decrementMutation,
-		// incrementMutation,
-		// setMutation,
 	};
 }

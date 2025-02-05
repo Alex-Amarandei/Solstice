@@ -7,7 +7,7 @@ import { ReactNode, Suspense, useEffect, useRef } from 'react';
 
 import { toast } from 'sonner';
 import { AccountChecker } from '../account/account-ui';
-import { ClusterChecker, ClusterUiSelect, ExplorerLink } from '../cluster/cluster-ui';
+import { ClusterChecker, ClusterUiSelect } from '../cluster/cluster-ui';
 import { WalletButton } from '../solana/solana-provider';
 
 export function UiLayout({ children, links }: { children: ReactNode; links: { label: string; path: string }[] }) {
@@ -146,7 +146,14 @@ export function useTransactionToast() {
 		toast.success(
 			<div className={'text-center'}>
 				<div className="text-lg">Transaction sent</div>
-				<ExplorerLink path={`tx/${signature}`} label={'View Transaction'} className="btn btn-xs btn-primary" />
+				<a
+					href={`https://explorer.solana.com/tx/${signature}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="btn btn-xs btn-primary"
+				>
+					View Transaction
+				</a>
 			</div>
 		);
 	};

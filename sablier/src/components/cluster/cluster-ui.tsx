@@ -1,5 +1,3 @@
-'use client';
-
 import { useConnection } from '@solana/wallet-adapter-react';
 import { Connection } from '@solana/web3.js';
 import { IconTrash } from '@tabler/icons-react';

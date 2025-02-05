@@ -11,8 +11,11 @@ export function formatNumberAmount(amount: number) {
 }
 
 export function formatShortenPubkey(pubkey: PublicKey) {
-	const publicKey = pubkey.toBase58();
-	return `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+	return formatShortenString(pubkey.toBase58());
+}
+
+export function formatShortenString(str: string) {
+	return `${str.slice(0, 4)}...${str.slice(-4)}`;
 }
 
 export function formatStreamState(stream: LockupLinearStream) {
