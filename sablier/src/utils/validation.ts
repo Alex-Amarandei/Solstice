@@ -48,7 +48,7 @@ export function isCreateStreamDataValid(stream: LockupLinearStreamState, duratio
 
 		const cliffDuration = getDuration(cliff);
 
-		if (cliffDuration <= 0) {
+		if (cliffDuration < 0) {
 			toast.error('Invalid Cliff duration');
 			return false;
 		}
@@ -77,6 +77,10 @@ export function isCreateStreamDataValid(stream: LockupLinearStreamState, duratio
 
 	if (stream.cliffTime.length !== 0) {
 		const cliffTime = new Date(stream.cliffTime).getTime() / 1000;
+
+		if (cliffTime === 0) {
+			return true;
+		}
 
 		if (cliffTime < startTime) {
 			toast.error('Cliff time cannot be before start time');

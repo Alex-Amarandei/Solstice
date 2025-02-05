@@ -7,6 +7,7 @@ import { ReactNode, Suspense, useEffect, useRef } from 'react';
 
 import { toast } from 'sonner';
 import { AccountChecker } from '../account/account-ui';
+import { useCluster } from '../cluster/cluster-data-access';
 import { ClusterChecker, ClusterUiSelect } from '../cluster/cluster-ui';
 import { WalletButton } from '../solana/solana-provider';
 
@@ -142,17 +143,23 @@ export function ellipsify(str = '', len = 4) {
 }
 
 export function useTransactionToast() {
+	const { cluster } = useCluster();
+
 	return (signature: string) => {
 		toast.success(
-			<div className={'text-center'}>
-				<div className="text-lg">Transaction sent</div>
+			<div className="flex flex-col items-center gap-2 p-2">
+				<div className="text-lg font-bold flex items-center gap-2 text-white">
+					<span>🎉</span>
+					<span>Transaction Sent!</span>
+				</div>
+				<div className="text-sm text-gray-400">Your transaction is being processed. You can view it here:</div>
 				<a
-					href={`https://explorer.solana.com/tx/${signature}`}
+					href={`https://explorer.solana.com/tx/${signature}?cluster=${cluster.network}`}
 					target="_blank"
 					rel="noopener noreferrer"
-					className="btn btn-xs btn-primary"
+					className="inline-flex items-center gap-1 font-medium text-blue-400 hover:text-blue-300 underline"
 				>
-					View Transaction
+					<span>🔗</span> View Transaction
 				</a>
 			</div>
 		);

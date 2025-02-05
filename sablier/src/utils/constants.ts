@@ -25,3 +25,11 @@ export const EMPTY_CLIFF: TimeTuple = {
 	hours: '',
 	minutes: '',
 };
+
+export const SEEDS = {
+	LOCKUP_LINEAR: {
+		STREAM: 'LockupLinearStream',
+		TREASURY: 'LockupLinearTreasury',
+		COUNTER: 'LockupLinearStreamCounter',
+	},
+};

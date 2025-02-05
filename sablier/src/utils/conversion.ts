@@ -25,6 +25,10 @@ export function toCreateLockupLinearStreamArgs(
 	};
 }
 
+export function toStreamCounterIndex(streamId: string) {
+	return streamId.split('-')[1];
+}
+
 export type CreateLockupLinearStreamArgs = {
 	name: string;
 	recipient: PublicKey;

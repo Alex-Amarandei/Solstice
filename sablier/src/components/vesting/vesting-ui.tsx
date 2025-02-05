@@ -3,7 +3,13 @@
 import { getElapsedAmount } from '@/utils/math';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { formatAmount, formatNumberAmount, formatShortenPubkey, formatStreamState, formatTimeline } from '../../utils/formatting';
+import {
+	formatAmount,
+	formatNumberAmountWithPrecision,
+	formatShortenPubkey,
+	formatStreamState,
+	formatTimeline,
+} from '../../utils/formatting';
 import { useLockupLinearProgram } from './vesting-data-access';
 
 export function TableWithTabs() {
@@ -74,9 +80,14 @@ export function TableWithTabs() {
 								<td className="px-4 py-4">
 									{formatTimeline(account.baseStream.startTime, account.baseStream.endTime, account.cliffTime)}
 								</td>
-								<td className="px-4 py-4">{formatNumberAmount(getElapsedAmount(account))}</td>
+								<td className="px-4 py-4">{formatNumberAmountWithPrecision(getElapsedAmount(account), 2)}</td>
 								<td className="px-4 py-4">
-									<button className="text-orange-500 hover:underline">View</button>
+									<button
+										className="text-orange-500 hover:underline"
+										onClick={() => router.push(`/vesting/stream/${account.baseStream.id}`)}
+									>
+										View
+									</button>
 								</td>
 							</tr>
 						))}

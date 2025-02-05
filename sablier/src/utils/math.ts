@@ -38,9 +38,52 @@ export function getTimesFromDuration(duration: TimeTuple, cliff: TimeTuple) {
 }
 
 export function getTimesFromDates(stream: LockupLinearStreamState) {
+	const startTime = new BN(new Date(stream.baseStream.startTime).getTime() / 1000);
+	let cliffTime = new BN(new Date(stream.cliffTime).getTime() / 1000);
+
+	if (stream.cliffTime.length === 0) {
+		cliffTime = startTime;
+	}
+
 	return {
-		startTime: new BN(new Date(stream.baseStream.startTime).getTime() / 1000),
+		startTime,
 		endTime: new BN(new Date(stream.baseStream.endTime).getTime() / 1000),
-		cliffTime: new BN(new Date(stream.cliffTime).getTime() / 1000),
+		cliffTime,
 	};
+}
+
+export function getElapsedPercentage(stream: LockupLinearStream) {
+	const elapsedAmount = getElapsedAmount(stream);
+	const depositedAmount = stream.baseStream.amounts.deposited.toNumber();
+
+	return (elapsedAmount / depositedAmount) * 100;
+}
+
+export function getWithdrawnPercentage(stream: LockupLinearStream) {
+	const withdrawnAmount = stream.baseStream.amounts.withdrawn.toNumber();
+	const depositedAmount = stream.baseStream.amounts.deposited.toNumber();
+
+	return (withdrawnAmount / depositedAmount) * 100;
+}
+
+export function canBeWithdrawnFrom(stream: LockupLinearStream) {
+	const now = Date.now() / 1000;
+
+	const startTime = stream.baseStream.startTime.toNumber();
+	const cliffTime = stream.cliffTime.toNumber();
+	const endTime = stream.baseStream.endTime.toNumber();
+
+	const deposited = stream.baseStream.amounts.deposited.toNumber();
+	const withdrawn = stream.baseStream.amounts.withdrawn.toNumber();
+	const refunded = stream.baseStream.amounts.refunded.toNumber();
+
+	if (now < startTime || now < cliffTime) {
+		return false;
+	}
+
+	if (now > endTime) {
+		return deposited > withdrawn + refunded;
+	}
+
+	return getElapsedAmount(stream) > 0;
 }

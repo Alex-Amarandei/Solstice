@@ -178,7 +178,6 @@ function RightSummary({ stream, onCreateStream }: { stream: LockupLinearStreamSt
 			</div>
 			<p className="text-xs text-gray-500">Excluding gas</p>
 
-			{/* Create Stream Button (full width) */}
 			<button
 				onClick={onCreateStream}
 				className="w-full mt-4 bg-sablier-orange-gradient

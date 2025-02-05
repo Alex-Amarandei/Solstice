@@ -1,21 +1,27 @@
 'use client';
 
+import { SEEDS } from '@/utils/constants';
 import { CreateLockupLinearStreamArgs } from '@/utils/conversion';
 import { getSablierProgram, getSablierProgramId } from '@project/anchor';
 import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Cluster, PublicKey } from '@solana/web3.js';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { useCluster } from '../cluster/cluster-data-access';
+import { useCounterProgram } from '../counter/counter-data-access';
 import { useAnchorProvider } from '../solana/solana-provider';
 import { useTransactionToast } from '../ui/ui-layout';
 
 export function useLockupLinearProgram() {
 	const { publicKey } = useWallet();
-
 	const { cluster } = useCluster();
+
+	const { streamCounterAccounts } = useCounterProgram();
+
+	const router = useRouter();
 	const transactionToast = useTransactionToast();
 	const provider = useAnchorProvider();
 	const programId = useMemo(() => getSablierProgramId(cluster.network as Cluster), [cluster]);
@@ -52,6 +58,48 @@ export function useLockupLinearProgram() {
 		onSuccess: (tx) => {
 			transactionToast(tx);
 			lockupLinearStreams.refetch();
+			const [streamPda] = PublicKey.findProgramAddressSync(
+				[
+					Buffer.from(SEEDS.LOCKUP_LINEAR.STREAM),
+					streamCounterAccounts.data!.at(0)!.account.streamIndex.toArrayLike(Buffer, 'le', 8),
+				],
+				program.programId
+			);
+			const createdStream = lockupLinearStreams.data?.find((stream) => stream.publicKey.equals(streamPda));
+			router.push(`/vesting/stream/${createdStream?.account.baseStream.id}`);
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+	});
+
+	const cancelLockupLinearStream = useMutation({
+		mutationKey: ['lockupLinear', 'cancel', { cluster }],
+		mutationFn: ({
+			stream,
+			tokenMint,
+			treasuryTokenAccount,
+		}: {
+			stream: PublicKey;
+			tokenMint: PublicKey;
+			treasuryTokenAccount: PublicKey;
+		}) =>
+			program.methods
+				.cancelLockupLinearStream()
+				.accounts({
+					sender: publicKey!,
+					stream,
+					tokenMint,
+					tokenProgram: TOKEN_2022_PROGRAM_ID,
+					treasuryTokenAccount,
+				})
+				.rpc(),
+		onMutate: async () => {
+			await lockupLinearStreams.refetch();
+		},
+		onSuccess: (tx) => {
+			transactionToast(tx);
+			lockupLinearStreams.refetch();
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -61,6 +109,7 @@ export function useLockupLinearProgram() {
 	return {
 		program,
 		createLockupLinearStream,
+		cancelLockupLinearStream,
 		lockupLinearStreams,
 	};
 }
@@ -69,12 +118,12 @@ export function useLockupLinearProgramAccount({ account }: { account: PublicKey 
 	const { cluster } = useCluster();
 	const { program } = useLockupLinearProgram();
 
-	const accountQuery = useQuery({
-		queryKey: ['sablier', 'fetch', { cluster, account }],
-		queryFn: () => program.account.streamCounter.fetch(account),
+	const streamQuery = useQuery({
+		queryKey: ['lockupLinear', 'fetch', { cluster, account }],
+		queryFn: () => program.account.lockupLinearStream.fetch(account),
 	});
 
 	return {
-		accountQuery,
+		streamQuery,
 	};
 }
