@@ -10,6 +10,7 @@ export function getElapsedAmount(stream: LockupLinearStream) {
 	const endTime = stream.baseStream.endTime.toNumber();
 
 	const deposited = stream.baseStream.amounts.deposited.toNumber();
+	const refunded = stream.baseStream.amounts.refunded.toNumber();
 
 	if (now < startTime || now < cliffTime) {
 		return 0;
@@ -20,7 +21,9 @@ export function getElapsedAmount(stream: LockupLinearStream) {
 	}
 
 	const elapsedTimePercentage = (now - startTime) / (endTime - startTime);
-	return Math.floor(deposited * elapsedTimePercentage);
+	const elapsedAmount = Math.floor(deposited * elapsedTimePercentage);
+
+	return Math.min(deposited - refunded, elapsedAmount);
 }
 
 export function getDuration(duration: TimeTuple) {

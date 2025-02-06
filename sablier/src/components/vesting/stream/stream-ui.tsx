@@ -15,11 +15,18 @@ import {
 	formatStreamState,
 } from '@/utils/formatting';
 import { canBeWithdrawnFrom, getElapsedAmount, getElapsedPercentage, getWithdrawnPercentage } from '@/utils/math';
+import { PublicKey } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
+import { useLockupLinearProgram } from '../vesting-data-access';
 
 export default function StreamDetailsPage({ stream }: { stream: LockupLinearStream }) {
 	const { cluster } = useCluster();
 	const [_, setCurrentTime] = useState(() => Date.now());
+	const { cancelLockupLinearStream } = useLockupLinearProgram();
+
+	const cancelOnClick = ({ streamId, tokenMint }: { streamId: string; tokenMint: PublicKey }) => {
+		cancelLockupLinearStream.mutateAsync({ streamId, tokenMint });
+	};
 
 	useEffect(() => {
 		const intervalId = setInterval(() => {
@@ -43,7 +50,7 @@ export default function StreamDetailsPage({ stream }: { stream: LockupLinearStre
 				<aside className="md:w-2/5 flex flex-col gap-4">
 					<StreamHeader stream={stream} />
 					<AttributesCard stream={stream} clusterName={cluster.name} />
-					<ActionsCard stream={stream} />
+					<ActionsCard stream={stream} cancelOnClick={cancelOnClick} />
 				</aside>
 			</div>
 		</div>
@@ -190,13 +197,25 @@ function AttributeItem({ label, value }: { label: string; value: string }) {
 	);
 }
 
-function ActionsCard({ stream }: { stream: LockupLinearStream }) {
+function ActionsCard({
+	stream,
+	cancelOnClick,
+}: {
+	stream: LockupLinearStream;
+	cancelOnClick: ({ streamId, tokenMint }: { streamId: string; tokenMint: PublicKey }) => void;
+}) {
 	return (
 		<div className="bg-sablier-card rounded-lg p-8 flex flex-col gap-6">
 			<h3 className="text-lg text-sablier-gray-text font-bold">Actions</h3>
 			<div className="flex flex-col gap-3 text-base">
 				<ActionItem label="Withdraw" locked={!canBeWithdrawnFrom(stream)} />
-				<ActionItem label="Cancel" locked={formatCancelabilityStatus(stream) !== 'Yes'} onClick={() => {}} />
+				<ActionItem
+					label="Cancel"
+					locked={formatCancelabilityStatus(stream) !== 'Yes'}
+					onClick={() => {
+						cancelOnClick({ streamId: stream.baseStream.id, tokenMint: stream.baseStream.tokenMint });
+					}}
+				/>
 				<ActionItem label="Renounce Cancelability" locked={formatCancelabilityStatus(stream) !== 'Yes'} />
 			</div>
 		</div>

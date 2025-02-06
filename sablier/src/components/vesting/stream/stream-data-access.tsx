@@ -24,7 +24,7 @@ export function useGetStreamById(streamId: string) {
 	};
 }
 
-function getStreamAddressById(streamId: string, programId: PublicKey) {
+export function getStreamAddressById(streamId: string, programId: PublicKey) {
 	return PublicKey.findProgramAddressSync(
 		[Buffer.from(SEEDS.LOCKUP_LINEAR.STREAM), new BN(toStreamCounterIndex(streamId)).toArrayLike(Buffer, 'le', 8)],
 		programId

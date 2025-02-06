@@ -1,12 +1,13 @@
 'use client';
 
 import { SEEDS } from '@/utils/constants';
-import { CreateLockupLinearStreamArgs } from '@/utils/conversion';
+import { CreateLockupLinearStreamArgs, toStreamCounterIndex } from '@/utils/conversion';
 import { getSablierProgram, getSablierProgramId } from '@project/anchor';
 import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Cluster, PublicKey } from '@solana/web3.js';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import BN from 'bn.js';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
@@ -14,6 +15,7 @@ import { useCluster } from '../cluster/cluster-data-access';
 import { useCounterProgram } from '../counter/counter-data-access';
 import { useAnchorProvider } from '../solana/solana-provider';
 import { useTransactionToast } from '../ui/ui-layout';
+import { getStreamAddressById } from './stream/stream-data-access';
 
 export function useLockupLinearProgram() {
 	const { publicKey } = useWallet();
@@ -75,16 +77,15 @@ export function useLockupLinearProgram() {
 
 	const cancelLockupLinearStream = useMutation({
 		mutationKey: ['lockupLinear', 'cancel', { cluster }],
-		mutationFn: ({
-			stream,
-			tokenMint,
-			treasuryTokenAccount,
-		}: {
-			stream: PublicKey;
-			tokenMint: PublicKey;
-			treasuryTokenAccount: PublicKey;
-		}) =>
-			program.methods
+		mutationFn: ({ streamId, tokenMint }: { streamId: string; tokenMint: PublicKey }) => {
+			const stream = getStreamAddressById(streamId, programId);
+			const streamCounterIndex = toStreamCounterIndex(streamId);
+			const [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
+				[Buffer.from(SEEDS.LOCKUP_LINEAR.TREASURY), tokenMint.toBuffer(), new BN(streamCounterIndex).toArrayLike(Buffer, 'le', 8)],
+				program.programId
+			);
+
+			return program.methods
 				.cancelLockupLinearStream()
 				.accounts({
 					sender: publicKey!,
@@ -93,7 +94,8 @@ export function useLockupLinearProgram() {
 					tokenProgram: TOKEN_2022_PROGRAM_ID,
 					treasuryTokenAccount,
 				})
-				.rpc(),
+				.rpc();
+		},
 		onMutate: async () => {
 			await lockupLinearStreams.refetch();
 		},

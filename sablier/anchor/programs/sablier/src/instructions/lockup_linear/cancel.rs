@@ -23,6 +23,7 @@ pub fn process_cancel_lockup_linear_stream(ctx: Context<CancelLockupLinearStream
 
     // Calculate the amount to refund
     let refundable_amount = if now < cliff_time {
+        msg!("Before cliff time, full amount will be refunded... 🏦");
         deposited_amount
     } else {
         let not_elapsed_percentage =
