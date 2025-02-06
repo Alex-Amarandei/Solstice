@@ -1,3 +1,4 @@
+import { useCluster } from '@/components/cluster/cluster-data-access';
 import { Breadcrumb } from '@/components/ui/ui-common';
 import { LockupLinearStreamState, TimeTuple } from '@/types/state';
 import { EMPTY_CLIFF, EMPTY_DURATION, EMPTY_STREAM } from '@/utils/constants';
@@ -10,7 +11,7 @@ import { useLockupLinearProgram } from '../vesting-data-access';
 
 export default function CreateLockupLinearStreamCard() {
 	const [stream, setStream] = useState<LockupLinearStreamState>(EMPTY_STREAM);
-
+	const { cluster } = useCluster();
 	const [duration, setDuration] = useState(EMPTY_DURATION);
 	const [cliff, setCliff] = useState(EMPTY_CLIFF);
 
@@ -43,7 +44,7 @@ export default function CreateLockupLinearStreamCard() {
 					cliff={cliff}
 					setCliff={setCliff}
 				/>
-				<RightSummary stream={stream} onCreateStream={onCreateStream} />
+				<RightSummary stream={stream} onCreateStream={onCreateStream} clusterName={cluster.name} />
 			</div>
 		</div>
 	);
@@ -140,14 +141,22 @@ function LeftColumn({
 	);
 }
 
-function RightSummary({ stream, onCreateStream }: { stream: LockupLinearStreamState; onCreateStream: () => void }) {
+function RightSummary({
+	stream,
+	onCreateStream,
+	clusterName,
+}: {
+	stream: LockupLinearStreamState;
+	onCreateStream: () => void;
+	clusterName: string;
+}) {
 	return (
 		<div className="w-full md:w-80 bg-sablier-card rounded-lg p-6 shadow-md h-fit mt-14">
 			<h3 className="text-base font-semibold mb-3">Summary</h3>
 			<div className="text-sm text-sablier-gray-text space-y-2">
 				<div className="flex justify-between">
 					<span>Chain</span>
-					<span className="text-sablier-gray-text">Solana</span>
+					<span className="text-sablier-gray-text">{`Solana (${clusterName})`}</span>
 				</div>
 				<div className="flex justify-between">
 					<span>Cancelability</span>
