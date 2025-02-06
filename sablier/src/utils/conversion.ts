@@ -40,3 +40,7 @@ export type CreateLockupLinearStreamArgs = {
 	isTransferable: boolean;
 	cliffTime: BN;
 };
+
+export function toLockupLinearStreamId(streamCounterIndex: number) {
+	return `LL-${streamCounterIndex}`;
+}

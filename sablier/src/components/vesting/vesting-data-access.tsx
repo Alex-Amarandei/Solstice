@@ -1,7 +1,7 @@
 'use client';
 
 import { SEEDS } from '@/utils/constants';
-import { CreateLockupLinearStreamArgs, toStreamCounterIndex } from '@/utils/conversion';
+import { CreateLockupLinearStreamArgs, toLockupLinearStreamId, toStreamCounterIndex } from '@/utils/conversion';
 import { getSablierProgram, getSablierProgramId } from '@project/anchor';
 import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -60,15 +60,9 @@ export function useLockupLinearProgram() {
 		onSuccess: (tx) => {
 			transactionToast(tx);
 			lockupLinearStreams.refetch();
-			const [streamPda] = PublicKey.findProgramAddressSync(
-				[
-					Buffer.from(SEEDS.LOCKUP_LINEAR.STREAM),
-					streamCounterAccounts.data!.at(0)!.account.streamIndex.toArrayLike(Buffer, 'le', 8),
-				],
-				program.programId
-			);
-			const createdStream = lockupLinearStreams.data?.find((stream) => stream.publicKey.equals(streamPda));
-			router.push(`/vesting/stream/${createdStream?.account.baseStream.id}`);
+			const streamCounterIndex = streamCounterAccounts.data!.at(0)!.account.streamIndex;
+			const streamId = toLockupLinearStreamId(streamCounterIndex.toNumber());
+			router.push(`/vesting/stream/${streamId}`);
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -108,11 +102,37 @@ export function useLockupLinearProgram() {
 		},
 	});
 
+	const renounceCancelabilityLockupLinearStream = useMutation({
+		mutationKey: ['lockupLinear', 'renounce', { cluster }],
+		mutationFn: (streamId: string) => {
+			const stream = getStreamAddressById(streamId, programId);
+
+			return program.methods
+				.renounceCancelabilityLockupLinearStream()
+				.accounts({
+					sender: publicKey!,
+					stream,
+				})
+				.rpc();
+		},
+		onMutate: async () => {
+			await lockupLinearStreams.refetch();
+		},
+		onSuccess: (tx) => {
+			transactionToast(tx);
+			lockupLinearStreams.refetch();
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+	});
+
 	return {
 		program,
 		createLockupLinearStream,
 		cancelLockupLinearStream,
 		lockupLinearStreams,
+		renounceCancelabilityLockupLinearStream,
 	};
 }
 

@@ -14,7 +14,7 @@ import {
 	formatStartStatus,
 	formatStreamState,
 } from '@/utils/formatting';
-import { canBeWithdrawnFrom, getElapsedAmount, getElapsedPercentage, getWithdrawnPercentage } from '@/utils/math';
+import { canBeWithdrawnFrom, getElapsedAmount, getElapsedPercentage, getExpectedPayout, getWithdrawnPercentage } from '@/utils/math';
 import { PublicKey } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
 import { useLockupLinearProgram } from '../vesting-data-access';
@@ -22,10 +22,14 @@ import { useLockupLinearProgram } from '../vesting-data-access';
 export default function StreamDetailsPage({ stream }: { stream: LockupLinearStream }) {
 	const { cluster } = useCluster();
 	const [_, setCurrentTime] = useState(() => Date.now());
-	const { cancelLockupLinearStream } = useLockupLinearProgram();
+	const { cancelLockupLinearStream, renounceCancelabilityLockupLinearStream } = useLockupLinearProgram();
 
 	const cancelOnClick = ({ streamId, tokenMint }: { streamId: string; tokenMint: PublicKey }) => {
 		cancelLockupLinearStream.mutateAsync({ streamId, tokenMint });
+	};
+
+	const renounceOnClick = (streamId: string) => {
+		renounceCancelabilityLockupLinearStream.mutateAsync(streamId);
 	};
 
 	useEffect(() => {
@@ -50,7 +54,7 @@ export default function StreamDetailsPage({ stream }: { stream: LockupLinearStre
 				<aside className="md:w-2/5 flex flex-col gap-4">
 					<StreamHeader stream={stream} />
 					<AttributesCard stream={stream} clusterName={cluster.name} />
-					<ActionsCard stream={stream} cancelOnClick={cancelOnClick} />
+					<ActionsCard stream={stream} cancelOnClick={cancelOnClick} renounceOnClick={renounceOnClick} />
 				</aside>
 			</div>
 		</div>
@@ -166,7 +170,7 @@ function AttributesCard({ stream, clusterName }: { stream: LockupLinearStream; c
 					value={`Lockup Linear${stream.cliffTime !== stream.baseStream.startTime ? ' with Cliff' : ''}`}
 				/>
 				<AttributeItem label="Status" value={formatStreamState(stream)} />
-				<AttributeItem label="Expected Payout" value={formatAmount(stream.baseStream.amounts.deposited).toString()} />
+				<AttributeItem label="Expected Payout" value={formatNumberAmount(getExpectedPayout(stream)).toString()} />
 				<AttributeItem label="Cancelability" value={formatCancelabilityStatus(stream)} />
 				<AttributeItem label="Cluster" value={clusterName} />
 				<AttributeItem label={formatStartStatus(stream.baseStream.startTime)} value={formatDate(stream.baseStream.startTime)} />
@@ -200,9 +204,11 @@ function AttributeItem({ label, value }: { label: string; value: string }) {
 function ActionsCard({
 	stream,
 	cancelOnClick,
+	renounceOnClick,
 }: {
 	stream: LockupLinearStream;
 	cancelOnClick: ({ streamId, tokenMint }: { streamId: string; tokenMint: PublicKey }) => void;
+	renounceOnClick: (streamId: string) => void;
 }) {
 	return (
 		<div className="bg-sablier-card rounded-lg p-8 flex flex-col gap-6">
@@ -216,7 +222,13 @@ function ActionsCard({
 						cancelOnClick({ streamId: stream.baseStream.id, tokenMint: stream.baseStream.tokenMint });
 					}}
 				/>
-				<ActionItem label="Renounce Cancelability" locked={formatCancelabilityStatus(stream) !== 'Yes'} />
+				<ActionItem
+					label="Renounce Cancelability"
+					locked={formatCancelabilityStatus(stream) !== 'Yes'}
+					onClick={() => {
+						renounceOnClick(stream.baseStream.id);
+					}}
+				/>
 			</div>
 		</div>
 	);

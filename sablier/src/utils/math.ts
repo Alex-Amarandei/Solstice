@@ -17,7 +17,7 @@ export function getElapsedAmount(stream: LockupLinearStream) {
 	}
 
 	if (now > endTime) {
-		return deposited;
+		return deposited - refunded;
 	}
 
 	const elapsedTimePercentage = (now - startTime) / (endTime - startTime);
@@ -89,4 +89,8 @@ export function canBeWithdrawnFrom(stream: LockupLinearStream) {
 	}
 
 	return getElapsedAmount(stream) > 0;
+}
+
+export function getExpectedPayout(stream: LockupLinearStream) {
+	return stream.baseStream.amounts.deposited.toNumber() - stream.baseStream.amounts.refunded.toNumber();
 }
