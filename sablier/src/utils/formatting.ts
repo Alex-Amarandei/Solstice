@@ -35,7 +35,7 @@ export function formatStreamState(stream: LockupLinearStream) {
 		return 'Canceled';
 	}
 
-	const now = Date.now() / 1000;
+	const now = Date.now() / 1000;  
 
 	if (now < stream.baseStream.startTime.toNumber()) {
 		return 'Not Started';

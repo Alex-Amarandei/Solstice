@@ -99,7 +99,7 @@ export default function StreamDetailsPage({ stream }: { stream: LockupLinearStre
 
 	return (
 		<div className="min-h-screen w-full text-white relative">
-			<Breadcrumb streamId={stream.baseStream.id} />
+			<Breadcrumb crumb={stream.baseStream.id} />
 
 			<div className="flex flex-col md:flex-row gap-6 p-6">
 				<main className="md:w-3/5 flex flex-col items-center justify-center">
