@@ -18,6 +18,7 @@ const config: Config = {
 			},
 			backgroundImage: {
 				'sablier-orange-gradient': 'linear-gradient(90deg, #ff7300, #ff9C00, #ffb800)',
+				'sablier-blue-gradient': 'linear-gradient(90deg, #003dff, #0063ff, #00b7ff)',
 			},
 		},
 	},

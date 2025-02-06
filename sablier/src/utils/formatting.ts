@@ -23,6 +23,14 @@ export function formatShortenString(str: string) {
 }
 
 export function formatStreamState(stream: LockupLinearStream) {
+	const deposited = stream.baseStream.amounts.deposited.toNumber();
+	const refunded = stream.baseStream.amounts.refunded.toNumber();
+	const withdrawn = stream.baseStream.amounts.withdrawn.toNumber();
+
+	if (deposited === withdrawn + refunded) {
+		return 'Depleted';
+	}
+
 	if (stream.baseStream.isCanceled) {
 		return 'Canceled';
 	}
@@ -39,14 +47,6 @@ export function formatStreamState(stream: LockupLinearStream) {
 
 	if (now < stream.baseStream.endTime.toNumber()) {
 		return 'Streaming';
-	}
-
-	const deposited = stream.baseStream.amounts.deposited.toNumber();
-	const refunded = stream.baseStream.amounts.refunded.toNumber();
-	const withdrawn = stream.baseStream.amounts.withdrawn.toNumber();
-
-	if (deposited === withdrawn + refunded) {
-		return 'Depleted';
 	}
 
 	return 'Ended';

@@ -127,12 +127,46 @@ export function useLockupLinearProgram() {
 		},
 	});
 
+	const withdrawFromLockupLinearStream = useMutation({
+		mutationKey: ['lockupLinear', 'withdraw', { cluster }],
+		mutationFn: ({ amount, streamId, tokenMint }: { amount: number; streamId: string; tokenMint: PublicKey }) => {
+			const stream = getStreamAddressById(streamId, programId);
+			const streamCounterIndex = toStreamCounterIndex(streamId);
+			const [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
+				[Buffer.from(SEEDS.LOCKUP_LINEAR.TREASURY), tokenMint.toBuffer(), new BN(streamCounterIndex).toArrayLike(Buffer, 'le', 8)],
+				program.programId
+			);
+
+			return program.methods
+				.withdrawFromLockupLinearStream(new BN(amount))
+				.accounts({
+					recipient: publicKey!,
+					stream,
+					tokenMint,
+					tokenProgram: TOKEN_2022_PROGRAM_ID,
+					treasuryTokenAccount,
+				})
+				.rpc();
+		},
+		onMutate: async () => {
+			await lockupLinearStreams.refetch();
+		},
+		onSuccess: (tx) => {
+			transactionToast(tx);
+			lockupLinearStreams.refetch();
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+	});
+
 	return {
 		program,
 		createLockupLinearStream,
 		cancelLockupLinearStream,
 		lockupLinearStreams,
 		renounceCancelabilityLockupLinearStream,
+		withdrawFromLockupLinearStream,
 	};
 }
 

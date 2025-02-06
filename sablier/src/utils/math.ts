@@ -94,3 +94,18 @@ export function canBeWithdrawnFrom(stream: LockupLinearStream) {
 export function getExpectedPayout(stream: LockupLinearStream) {
 	return stream.baseStream.amounts.deposited.toNumber() - stream.baseStream.amounts.refunded.toNumber();
 }
+
+export function addDecimals(amount: number, decimals: number = 9) {
+	return amount * 10 ** decimals;
+}
+
+export function removeDecimals(amount: number, decimals: number = 9) {
+	return amount / 10 ** decimals;
+}
+
+export function getWithdrawableAmount(stream: LockupLinearStream) {
+	const elapsedAmount = getElapsedAmount(stream);
+	const withdrawnAmount = stream.baseStream.amounts.withdrawn.toNumber();
+
+	return elapsedAmount - withdrawnAmount;
+}
