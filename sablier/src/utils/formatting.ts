@@ -35,7 +35,7 @@ export function formatStreamState(stream: LockupLinearStream) {
 		return 'Canceled';
 	}
 
-	const now = Date.now() / 1000;  
+	const now = Date.now() / 1000;
 
 	if (now < stream.baseStream.startTime.toNumber()) {
 		return 'Not Started';
@@ -85,4 +85,8 @@ export function formatPercentage(percentage: number) {
 	}
 
 	return `${percentage.toFixed(2)}%`;
+}
+
+export function truncateString(str: string, maxLength: number) {
+	return str.length <= maxLength ? str : str.slice(0, maxLength) + '...';
 }
