@@ -32,7 +32,7 @@ export default function CreateLockupLinearStreamCard() {
 
 	return (
 		<div className="min-h-screen w-full text-white">
-			<Breadcrumb crumb="create" />
+			<Breadcrumb crumb="Create Lockup Linear Stream" />
 
 			<div className="flex flex-col md:flex-row px-8 py-8 gap-6">
 				<LeftColumn
