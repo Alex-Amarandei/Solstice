@@ -12,7 +12,6 @@ import {
 } from '../../utils/formatting';
 import { useLockupLinearProgram } from './vesting-data-access';
 
-/** Utility to truncate a string to `maxLength` characters with trailing '...' */
 function smartTruncateString(str: string | undefined, maxLength: number) {
 	if (!str) return '';
 	return str.length <= maxLength ? str : str.slice(0, maxLength) + '...';
@@ -24,14 +23,15 @@ export function TableWithTabs() {
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
-	// Search fields
 	const [searchName, setSearchName] = useState('');
 	const [searchId, setSearchId] = useState('');
 
-	// Keep a separate array for filtered streams
-	const [filteredStreams, setFilteredStreams] = useState(lockupLinearStreams?.data || []);
+	const [filteredStreams, setFilteredStreams] = useState(
+		lockupLinearStreams?.data?.sort((a, b) => {
+			return b.account.baseStream.startTime.toNumber() - a.account.baseStream.startTime.toNumber();
+		}) || []
+	);
 
-	// Whenever the original data changes, reset our filtered array
 	useEffect(() => {
 		if (lockupLinearStreams?.data) {
 			setFilteredStreams(lockupLinearStreams.data);
@@ -45,7 +45,6 @@ export function TableWithTabs() {
 
 	const handleTabClick = (tabId: string) => {
 		if (tabId === 'all') {
-			// Reset search fields and show all streams
 			setFilteredStreams(lockupLinearStreams?.data || []);
 			setSearchName('');
 			setSearchId('');
@@ -148,7 +147,6 @@ export function TableWithTabs() {
 				</table>
 			</div>
 
-			{/* Search Modal */}
 			{isModalOpen && (
 				<div
 					className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
